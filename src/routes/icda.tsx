@@ -115,9 +115,10 @@ function ICDAPage() {
                       <span className="font-serif text-2xl text-navy-deep">
                         {Number(c.price) === 0 ? "Free" : `R${Number(c.price).toFixed(0)}`}
                       </span>
-                      <Button asChild size="sm" disabled={isFull} className="bg-navy text-cream rounded-none text-[11px] uppercase tracking-widest">
-                        <Link to="/auth">{isFull ? "Full" : "Enrol"}</Link>
+                      <Button size="sm" disabled={isFull} onClick={() => handleEnrol(c.id)} className="bg-navy text-cream rounded-none text-[11px] uppercase tracking-widest">
+                        {isFull ? "Full" : "Enrol"}
                       </Button>
+
                     </div>
                   </div>
                 </article>
