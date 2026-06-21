@@ -37,6 +37,16 @@ export const Route = createFileRoute("/idw")({
 
 function IDWPage() {
   const { data: products } = useSuspenseQuery(productsQuery);
+  const { user, roles } = useAuth();
+  const { addProduct } = useCart();
+  const navigate = useNavigate();
+
+  const handleAdd = (productId: string) => {
+    if (!user) { navigate({ to: "/auth" }); return; }
+    if (primaryRole(roles) === "administrator") { navigate({ to: "/dashboard" }); return; }
+    addProduct.mutate(productId);
+  };
+
 
   return (
     <SiteShell>
