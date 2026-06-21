@@ -90,9 +90,10 @@ function IDWPage() {
                 {p.designer_name && <div className="text-xs text-navy/50 italic">by {p.designer_name}</div>}
                 <div className="mt-2 flex items-center justify-between">
                   <span className="font-serif text-lg">R{Number(p.price).toFixed(0)}</span>
-                  <Button asChild size="sm" variant="ghost" className="text-[11px] uppercase tracking-widest text-navy hover:text-clay">
-                    <Link to="/auth">Add to cart</Link>
+                  <Button size="sm" variant="ghost" onClick={() => handleAdd(p.id)} className="text-[11px] uppercase tracking-widest text-navy hover:text-clay">
+                    Add to cart
                   </Button>
+
                 </div>
               </article>
             ))}
