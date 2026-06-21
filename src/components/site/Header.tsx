@@ -1,6 +1,8 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, X, LogOut, LayoutDashboard, GraduationCap, HeartHandshake, ShieldCheck, User as UserIcon } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, GraduationCap, HeartHandshake, ShieldCheck, User as UserIcon, ShoppingBag } from "lucide-react";
+import { useCart } from "@/hooks/use-cart";
+
 import { useAuth, primaryRole, type AppRole } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +64,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { count: cartCount } = useCart();
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -110,8 +114,17 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2">
+          {isAuthed && role && role !== "administrator" && (
+            <Link to="/cart" aria-label="Cart" className="relative p-2 text-navy hover:text-gold">
+              <ShoppingBag size={18} />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-gold text-navy-deep text-[10px] font-bold rounded-full w-4 h-4 grid place-items-center">{cartCount}</span>
+              )}
+            </Link>
+          )}
           {isAuthed && role ? (
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-navy hover:text-gold gap-2">

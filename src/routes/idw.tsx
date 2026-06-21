@@ -1,8 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth, primaryRole } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
+
 
 const productsQuery = queryOptions({
   queryKey: ["products", "public"],
@@ -34,6 +37,16 @@ export const Route = createFileRoute("/idw")({
 
 function IDWPage() {
   const { data: products } = useSuspenseQuery(productsQuery);
+  const { user, roles } = useAuth();
+  const { addProduct } = useCart();
+  const navigate = useNavigate();
+
+  const handleAdd = (productId: string) => {
+    if (!user) { navigate({ to: "/auth" }); return; }
+    if (primaryRole(roles) === "administrator") { navigate({ to: "/dashboard" }); return; }
+    addProduct.mutate(productId);
+  };
+
 
   return (
     <SiteShell>
@@ -77,9 +90,10 @@ function IDWPage() {
                 {p.designer_name && <div className="text-xs text-navy/50 italic">by {p.designer_name}</div>}
                 <div className="mt-2 flex items-center justify-between">
                   <span className="font-serif text-lg">R{Number(p.price).toFixed(0)}</span>
-                  <Button asChild size="sm" variant="ghost" className="text-[11px] uppercase tracking-widest text-navy hover:text-clay">
-                    <Link to="/auth">Add to cart</Link>
+                  <Button size="sm" variant="ghost" onClick={() => handleAdd(p.id)} className="text-[11px] uppercase tracking-widest text-navy hover:text-clay">
+                    Add to cart
                   </Button>
+
                 </div>
               </article>
             ))}

@@ -1,9 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { Calendar, Users, MapPin } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth, primaryRole } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
+
 
 const coursesQuery = queryOptions({
   queryKey: ["courses", "public"],
@@ -35,8 +38,21 @@ export const Route = createFileRoute("/icda")({
 
 function ICDAPage() {
   const { data: courses } = useSuspenseQuery(coursesQuery);
+  const { user, roles } = useAuth();
+  const { addCourse } = useCart();
+  const navigate = useNavigate();
+
+  const handleEnrol = async (courseId: string) => {
+    if (!user) { navigate({ to: "/auth" }); return; }
+    const role = primaryRole(roles);
+    if (role === "administrator") { navigate({ to: "/dashboard" }); return; }
+    // Already authed — go straight to cart with the course added
+    await addCourse.mutateAsync(courseId);
+    navigate({ to: "/cart" });
+  };
 
   return (
+
     <SiteShell>
       <section className="container-page py-20 md:py-28 border-b border-navy/10">
         <span className="eyebrow text-clay">ICDA Academy</span>
@@ -99,9 +115,10 @@ function ICDAPage() {
                       <span className="font-serif text-2xl text-navy-deep">
                         {Number(c.price) === 0 ? "Free" : `R${Number(c.price).toFixed(0)}`}
                       </span>
-                      <Button asChild size="sm" disabled={isFull} className="bg-navy text-cream rounded-none text-[11px] uppercase tracking-widest">
-                        <Link to="/auth">{isFull ? "Full" : "Enrol"}</Link>
+                      <Button size="sm" disabled={isFull} onClick={() => handleEnrol(c.id)} className="bg-navy text-cream rounded-none text-[11px] uppercase tracking-widest">
+                        {isFull ? "Full" : "Enrol"}
                       </Button>
+
                     </div>
                   </div>
                 </article>
