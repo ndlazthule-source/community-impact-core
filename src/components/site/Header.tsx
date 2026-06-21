@@ -1,6 +1,8 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, X, LogOut, LayoutDashboard, GraduationCap, HeartHandshake, ShieldCheck, User as UserIcon } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, GraduationCap, HeartHandshake, ShieldCheck, User as UserIcon, ShoppingBag } from "lucide-react";
+import { useCart } from "@/hooks/use-cart";
+
 import { useAuth, primaryRole, type AppRole } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
