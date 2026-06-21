@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as InqabaRouteImport } from './routes/inqaba'
 import { Route as IdwRouteImport } from './routes/idw'
 import { Route as IcdaRouteImport } from './routes/icda'
@@ -19,6 +20,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InqabaRoute = InqabaRouteImport.update({
   id: '/inqaba',
   path: '/inqaba',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/icda': typeof IcdaRoute
   '/idw': typeof IdwRoute
   '/inqaba': typeof InqabaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/icda': typeof IcdaRoute
   '/idw': typeof IdwRoute
   '/inqaba': typeof InqabaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/icda': typeof IcdaRoute
   '/idw': typeof IdwRoute
   '/inqaba': typeof InqabaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/icda'
     | '/idw'
     | '/inqaba'
+    | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/icda'
     | '/idw'
     | '/inqaba'
+    | '/sitemap.xml'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/icda'
     | '/idw'
     | '/inqaba'
+    | '/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,10 +157,18 @@ export interface RootRouteChildren {
   IcdaRoute: typeof IcdaRoute
   IdwRoute: typeof IdwRoute
   InqabaRoute: typeof InqabaRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inqaba': {
       id: '/inqaba'
       path: '/inqaba'
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   IcdaRoute: IcdaRoute,
   IdwRoute: IdwRoute,
   InqabaRoute: InqabaRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
