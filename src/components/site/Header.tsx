@@ -114,8 +114,17 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2">
+          {isAuthed && role && role !== "administrator" && (
+            <Link to="/cart" aria-label="Cart" className="relative p-2 text-navy hover:text-gold">
+              <ShoppingBag size={18} />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-gold text-navy-deep text-[10px] font-bold rounded-full w-4 h-4 grid place-items-center">{cartCount}</span>
+              )}
+            </Link>
+          )}
           {isAuthed && role ? (
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-navy hover:text-gold gap-2">
