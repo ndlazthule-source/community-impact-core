@@ -64,6 +64,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { count: cartCount } = useCart();
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
