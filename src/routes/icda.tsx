@@ -38,8 +38,21 @@ export const Route = createFileRoute("/icda")({
 
 function ICDAPage() {
   const { data: courses } = useSuspenseQuery(coursesQuery);
+  const { user, roles } = useAuth();
+  const { addCourse } = useCart();
+  const navigate = useNavigate();
+
+  const handleEnrol = async (courseId: string) => {
+    if (!user) { navigate({ to: "/auth" }); return; }
+    const role = primaryRole(roles);
+    if (role === "administrator") { navigate({ to: "/dashboard" }); return; }
+    // Already authed — go straight to cart with the course added
+    await addCourse.mutateAsync(courseId);
+    navigate({ to: "/cart" });
+  };
 
   return (
+
     <SiteShell>
       <section className="container-page py-20 md:py-28 border-b border-navy/10">
         <span className="eyebrow text-clay">ICDA Academy</span>
