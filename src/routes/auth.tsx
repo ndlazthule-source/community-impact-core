@@ -98,6 +98,23 @@ function AuthPage() {
     }
   };
 
+  const handleForgot = async () => {
+    const email = window.prompt("Enter your account email to receive a reset link:");
+    if (!email) return;
+    const parsed = z.string().trim().email().safeParse(email);
+    if (!parsed.success) {
+      toast.error("Please enter a valid email.");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) toast.error(error.message);
+    else toast.success("Check your inbox for the reset link.");
+  };
+
   return (
     <SiteShell>
       <section className="container-page py-16 md:py-24">
@@ -106,6 +123,7 @@ function AuthPage() {
             <h1 className="font-serif text-3xl text-navy-deep">Welcome to IMPACT</h1>
             <p className="text-sm text-navy/60 mt-2">Sign in to enrol, donate, or shop.</p>
           </div>
+
 
           <Button
             type="button"
@@ -142,8 +160,16 @@ function AuthPage() {
                 <Button type="submit" disabled={loading} className="w-full bg-navy hover:bg-navy-deep text-cream rounded-none py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
                   {loading ? "Signing in…" : "Sign in"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={handleForgot}
+                  className="block w-full text-center text-xs text-navy/60 hover:text-gold underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </button>
               </form>
             </TabsContent>
+
 
             <TabsContent value="signup" className="mt-6">
               <form onSubmit={handleSignUp} className="space-y-4">
