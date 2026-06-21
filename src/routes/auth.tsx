@@ -160,8 +160,16 @@ function AuthPage() {
                 <Button type="submit" disabled={loading} className="w-full bg-navy hover:bg-navy-deep text-cream rounded-none py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
                   {loading ? "Signing in…" : "Sign in"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={handleForgot}
+                  className="block w-full text-center text-xs text-navy/60 hover:text-gold underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </button>
               </form>
             </TabsContent>
+
 
             <TabsContent value="signup" className="mt-6">
               <form onSubmit={handleSignUp} className="space-y-4">
