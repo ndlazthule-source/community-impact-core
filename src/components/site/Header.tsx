@@ -22,6 +22,7 @@ const publicNav = [
   { to: "/idw", label: "IDW Marketplace" },
   { to: "/inqaba", label: "INQABA" },
   { to: "/events", label: "Events" },
+  { to: "/donate", label: "Donate" },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -167,9 +168,14 @@ export function Header() {
               <Link to="/auth">Sign in</Link>
             </Button>
           )}
-          {role !== "administrator" && (
+          {!isAuthed && (
             <Button asChild className="bg-navy hover:bg-navy-deep text-cream rounded-none px-6 text-[11px] font-bold uppercase tracking-[0.18em]">
-              <Link to="/inqaba">{role === "donor" ? "Give" : "Donate"}</Link>
+              <Link to="/register">Get Started</Link>
+            </Button>
+          )}
+          {isAuthed && role !== "administrator" && (
+            <Button asChild className="bg-navy hover:bg-navy-deep text-cream rounded-none px-6 text-[11px] font-bold uppercase tracking-[0.18em]">
+              <Link to="/donate">{role === "donor" ? "Give" : "Donate"}</Link>
             </Button>
           )}
         </div>
@@ -207,18 +213,25 @@ export function Header() {
             ))}
             <div className="flex gap-3 pt-4 border-t border-navy/10">
               {isAuthed ? (
-                <Button variant="outline" onClick={handleSignOut} className="flex-1 border-navy text-navy rounded-none">
-                  <LogOut size={14} className="mr-2" /> Sign out
-                </Button>
+                <>
+                  <Button variant="outline" onClick={handleSignOut} className="flex-1 border-navy text-navy rounded-none">
+                    <LogOut size={14} className="mr-2" /> Sign out
+                  </Button>
+                  {role !== "administrator" && (
+                    <Button asChild className="flex-1 bg-navy text-cream rounded-none">
+                      <Link to="/donate">{role === "donor" ? "Give" : "Donate"}</Link>
+                    </Button>
+                  )}
+                </>
               ) : (
-                <Button asChild variant="outline" className="flex-1 border-navy text-navy rounded-none">
-                  <Link to="/auth">Sign in</Link>
-                </Button>
-              )}
-              {role !== "administrator" && (
-                <Button asChild className="flex-1 bg-navy text-cream rounded-none">
-                  <Link to="/inqaba">{role === "donor" ? "Give" : "Donate"}</Link>
-                </Button>
+                <>
+                  <Button asChild variant="outline" className="flex-1 border-navy text-navy rounded-none">
+                    <Link to="/auth">Sign in</Link>
+                  </Button>
+                  <Button asChild className="flex-1 bg-navy text-cream rounded-none">
+                    <Link to="/register">Get Started</Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>
