@@ -113,8 +113,8 @@ function DonorDashboard({ userId }: { userId: string }) {
 function AdminDashboard() {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <AdminCard to="/admin/courses" icon={BookOpen} title="Courses & Enrollments" body="Create courses, set capacity, and approve or reject enrollment requests." />
       <AdminCard icon={Users} title="User Management" body="View users, assign roles, manage profiles." />
-      <AdminCard icon={BookOpen} title="Course Management" body="Create, edit, archive courses and approve enrollments." />
       <AdminCard icon={ShoppingBag} title="Product Management" body="Manage IDW marketplace inventory and designers." />
       <AdminCard icon={HeartHandshake} title="Sponsorships" body="Add and manage INQABA child profiles." />
       <AdminCard icon={GraduationCap} title="Events" body="Create event records, upload galleries, manage feedback." />
@@ -123,15 +123,17 @@ function AdminDashboard() {
   );
 }
 
-function AdminCard({ icon: Icon, title, body }: { icon: typeof Users; title: string; body: string }) {
-  return (
-    <div className="bg-white border border-navy/10 p-6 shadow-soft">
+function AdminCard({ icon: Icon, title, body, to }: { icon: typeof Users; title: string; body: string; to?: string }) {
+  const content = (
+    <div className="bg-white border border-navy/10 p-6 shadow-soft h-full hover:border-clay transition-colors">
       <Icon className="text-clay mb-4" size={24} />
       <h3 className="font-serif text-xl text-navy-deep mb-2">{title}</h3>
       <p className="text-sm text-navy/60">{body}</p>
     </div>
   );
+  return to ? <Link to={to}>{content}</Link> : content;
 }
+
 
 /* ---------------- SHARED PANELS ---------------- */
 
