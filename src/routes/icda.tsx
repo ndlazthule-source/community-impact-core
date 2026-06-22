@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Users, MapPin } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, primaryRole } from "@/hooks/use-auth";
-import { useCart } from "@/hooks/use-cart";
+import { toast } from "sonner";
+
 
 
 const coursesQuery = queryOptions({
@@ -39,17 +40,31 @@ export const Route = createFileRoute("/icda")({
 function ICDAPage() {
   const { data: courses } = useSuspenseQuery(coursesQuery);
   const { user, roles } = useAuth();
-  const { addCourse } = useCart();
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
-  const handleEnrol = async (courseId: string) => {
+  const handleEnrol = async (courseId: string, isFull: boolean) => {
     if (!user) { navigate({ to: "/auth" }); return; }
     const role = primaryRole(roles);
-    if (role === "administrator") { navigate({ to: "/dashboard" }); return; }
-    // Already authed — go straight to cart with the course added
-    await addCourse.mutateAsync(courseId);
-    navigate({ to: "/cart" });
+    if (role === "administrator") { navigate({ to: "/admin/courses" }); return; }
+    if (isFull) { toast.error("This course is full."); return; }
+    const year = new Date().getFullYear();
+    const { error } = await supabase.from("enrollments").insert({
+      course_id: courseId,
+      student_id: user.id,
+      status: "pending",
+      enrollment_year: year,
+    });
+    if (error) {
+      if (error.code === "23505") toast.info("You've already enrolled in this course.");
+      else toast.error(error.message);
+      return;
+    }
+    toast.success("Enrollment submitted — awaiting admin approval.");
+    qc.invalidateQueries({ queryKey: ["enrollments"] });
+    navigate({ to: "/dashboard" });
   };
+
 
   return (
 
@@ -115,7 +130,7 @@ function ICDAPage() {
                       <span className="font-serif text-2xl text-navy-deep">
                         {Number(c.price) === 0 ? "Free" : `R${Number(c.price).toFixed(0)}`}
                       </span>
-                      <Button size="sm" disabled={isFull} onClick={() => handleEnrol(c.id)} className="bg-navy text-cream rounded-none text-[11px] uppercase tracking-widest">
+                      <Button size="sm" disabled={isFull} onClick={() => handleEnrol(c.id, isFull)} className="bg-navy text-cream rounded-none text-[11px] uppercase tracking-widest">
                         {isFull ? "Full" : "Enrol"}
                       </Button>
 
