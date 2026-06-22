@@ -40,17 +40,31 @@ export const Route = createFileRoute("/icda")({
 function ICDAPage() {
   const { data: courses } = useSuspenseQuery(coursesQuery);
   const { user, roles } = useAuth();
-  const { addCourse } = useCart();
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
-  const handleEnrol = async (courseId: string) => {
+  const handleEnrol = async (courseId: string, isFull: boolean) => {
     if (!user) { navigate({ to: "/auth" }); return; }
     const role = primaryRole(roles);
-    if (role === "administrator") { navigate({ to: "/dashboard" }); return; }
-    // Already authed — go straight to cart with the course added
-    await addCourse.mutateAsync(courseId);
-    navigate({ to: "/cart" });
+    if (role === "administrator") { navigate({ to: "/admin/courses" }); return; }
+    if (isFull) { toast.error("This course is full."); return; }
+    const year = new Date().getFullYear();
+    const { error } = await supabase.from("enrollments").insert({
+      course_id: courseId,
+      student_id: user.id,
+      status: "pending",
+      enrollment_year: year,
+    });
+    if (error) {
+      if (error.code === "23505") toast.info("You've already enrolled in this course.");
+      else toast.error(error.message);
+      return;
+    }
+    toast.success("Enrollment submitted — awaiting admin approval.");
+    qc.invalidateQueries({ queryKey: ["enrollments"] });
+    navigate({ to: "/dashboard" });
   };
+
 
   return (
 
