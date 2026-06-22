@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as InqabaRouteImport } from './routes/inqaba'
 import { Route as IdwRouteImport } from './routes/idw'
 import { Route as IcdaRouteImport } from './routes/icda'
 import { Route as EventsRouteImport } from './routes/events'
+import { Route as DonateRouteImport } from './routes/donate'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CartRouteImport } from './routes/cart'
@@ -31,6 +33,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InqabaRoute = InqabaRouteImport.update({
@@ -51,6 +58,11 @@ const IcdaRoute = IcdaRouteImport.update({
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DonateRoute = DonateRouteImport.update({
+  id: '/donate',
+  path: '/donate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -96,10 +108,12 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/donate': typeof DonateRoute
   '/events': typeof EventsRoute
   '/icda': typeof IcdaRoute
   '/idw': typeof IdwRoute
   '/inqaba': typeof InqabaRoute
+  '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -111,10 +125,12 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/donate': typeof DonateRoute
   '/events': typeof EventsRoute
   '/icda': typeof IcdaRoute
   '/idw': typeof IdwRoute
   '/inqaba': typeof InqabaRoute
+  '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -127,10 +143,12 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/donate': typeof DonateRoute
   '/events': typeof EventsRoute
   '/icda': typeof IcdaRoute
   '/idw': typeof IdwRoute
   '/inqaba': typeof InqabaRoute
+  '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -144,10 +162,12 @@ export interface FileRouteTypes {
     | '/cart'
     | '/contact'
     | '/dashboard'
+    | '/donate'
     | '/events'
     | '/icda'
     | '/idw'
     | '/inqaba'
+    | '/register'
     | '/reset-password'
     | '/sitemap.xml'
     | '/admin/courses'
@@ -159,10 +179,12 @@ export interface FileRouteTypes {
     | '/cart'
     | '/contact'
     | '/dashboard'
+    | '/donate'
     | '/events'
     | '/icda'
     | '/idw'
     | '/inqaba'
+    | '/register'
     | '/reset-password'
     | '/sitemap.xml'
     | '/admin/courses'
@@ -174,10 +196,12 @@ export interface FileRouteTypes {
     | '/cart'
     | '/contact'
     | '/dashboard'
+    | '/donate'
     | '/events'
     | '/icda'
     | '/idw'
     | '/inqaba'
+    | '/register'
     | '/reset-password'
     | '/sitemap.xml'
     | '/admin/courses'
@@ -190,10 +214,12 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  DonateRoute: typeof DonateRoute
   EventsRoute: typeof EventsRoute
   IcdaRoute: typeof IcdaRoute
   IdwRoute: typeof IdwRoute
   InqabaRoute: typeof InqabaRoute
+  RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminCoursesRoute: typeof AdminCoursesRoute
@@ -213,6 +239,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inqaba': {
@@ -241,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/events'
       preLoaderRoute: typeof EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/donate': {
+      id: '/donate'
+      path: '/donate'
+      fullPath: '/donate'
+      preLoaderRoute: typeof DonateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -302,10 +342,12 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  DonateRoute: DonateRoute,
   EventsRoute: EventsRoute,
   IcdaRoute: IcdaRoute,
   IdwRoute: IdwRoute,
   InqabaRoute: InqabaRoute,
+  RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminCoursesRoute: AdminCoursesRoute,
