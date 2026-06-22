@@ -53,7 +53,7 @@ function InqabaPage() {
             </p>
             <div className="mt-8 flex gap-4">
               <Button asChild className="bg-gold hover:bg-gold-soft text-navy-deep rounded-none px-8 py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
-                <Link to="/auth">Sponsor a Child</Link>
+                <Link to="/donate">Donate</Link>
               </Button>
             </div>
           </div>
@@ -98,7 +98,7 @@ function InqabaPage() {
                   <div className="mt-4 pt-4 border-t border-navy/10 flex items-center justify-between">
                     <span className="font-serif text-lg">R{Number(k.monthly_amount).toFixed(0)}/mo</span>
                     <Button asChild size="sm" className="bg-clay hover:bg-clay/90 text-cream rounded-none text-[11px] uppercase tracking-widest">
-                      <Link to="/auth">Sponsor</Link>
+                      <Link to="/donate">Donate</Link>
                     </Button>
                   </div>
                 </div>

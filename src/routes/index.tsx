@@ -1,11 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, GraduationCap, ShoppingBag, HeartHandshake } from "lucide-react";
+import { ArrowRight, GraduationCap, ShoppingBag, HeartHandshake, Quote } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
-import heroImg from "@/assets/hero-community.jpg";
-import icdaImg from "@/assets/division-icda.jpg";
-import idwImg from "@/assets/division-idw.jpg";
-import inqabaImg from "@/assets/division-inqaba.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +23,6 @@ const stats = [
 const divisions = [
   {
     href: "/icda" as const,
-    img: icdaImg,
     icon: GraduationCap,
     title: "ICDA Capacity Development",
     body: "Equipping youth and entrepreneurs with future-ready skills in digital literacy, leadership, and accredited vocational training.",
@@ -35,7 +30,6 @@ const divisions = [
   },
   {
     href: "/idw" as const,
-    img: idwImg,
     icon: ShoppingBag,
     title: "Designers Warehouse",
     body: "A commercial marketplace empowering rural artisans to reach global audiences through ethical, designed-in-Africa commerce.",
@@ -43,7 +37,6 @@ const divisions = [
   },
   {
     href: "/inqaba" as const,
-    img: inqabaImg,
     icon: HeartHandshake,
     title: "INQABA Adopt-A-Child",
     body: "Transforming the lives of vulnerable learners through holistic support, nutrition, mentorship, and community guardianship.",
@@ -51,158 +44,116 @@ const divisions = [
   },
 ];
 
-const testimonials = [
-  {
-    quote: "ICDA didn't just train me — they handed me the tools and the network to start my own business within a year.",
-    name: "Thandi M.",
-    role: "ICDA Graduate, 2024",
-  },
-  {
-    quote: "Through INQABA, three children in our village are now in high school. The ripple effect on the community is real.",
-    name: "Sipho N.",
-    role: "Community Elder, Limpopo",
-  },
-  {
-    quote: "Selling through IDW connected our weaving cooperative to buyers in Cape Town and London. Our income tripled.",
-    name: "Nomvula D.",
-    role: "Artisan, Eastern Cape",
-  },
-];
-
 function HomePage() {
   return (
     <SiteShell>
-      {/* Hero */}
-      <section className="relative px-6 md:px-8 pt-12 pb-24 md:pt-20 md:pb-32">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-          <div className="space-y-8">
+      {/* Hero — editorial typographic, no photography */}
+      <section className="relative overflow-hidden bg-cream">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-gold/15 blur-3xl" />
+          <div className="absolute top-1/3 -left-40 w-[420px] h-[420px] rounded-full bg-clay/10 blur-3xl" />
+        </div>
+        <div className="container-page relative py-20 md:py-32">
+          <div className="max-w-4xl">
             <span className="eyebrow text-clay">Impact Group of Companies</span>
-            <h1 className="font-serif text-5xl md:text-7xl leading-[0.95] text-navy-deep">
-              Empowering <em className="italic text-clay font-normal">Generations</em> through Action.
+            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-navy-deep mt-6">
+              Empowering <em className="italic text-clay font-normal">Generations</em>
+              <br />through Action.
             </h1>
-            <p className="text-lg text-navy/80 max-w-md leading-relaxed">
+            <p className="mt-10 text-lg md:text-xl text-navy/75 max-w-2xl leading-relaxed">
               A South African social impact collective dedicated to unlocking human potential in
-              rural communities through education, design, and child welfare.
+              rural communities through education, ethical commerce, and child welfare.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Button asChild className="bg-gold hover:bg-gold-soft text-navy-deep rounded-none px-8 py-6 text-[11px] font-bold uppercase tracking-[0.2em] shadow-card">
+            <div className="mt-12 flex flex-wrap gap-4">
+              <Button asChild className="bg-navy hover:bg-navy-deep text-cream rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
                 <Link to="/icda">Explore Our Work</Link>
               </Button>
-              <Button asChild variant="outline" className="border-navy/20 text-navy hover:bg-navy hover:text-cream rounded-none px-8 py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
-                <Link to="/about">Our Impact</Link>
+              <Button asChild variant="outline" className="border-navy/30 text-navy hover:bg-gold hover:text-navy-deep hover:border-gold rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
+                <Link to="/donate">Donate Now</Link>
               </Button>
             </div>
           </div>
-          <div className="relative">
-            <img
-              src={heroImg}
-              alt="South African community gathered at a vibrant outdoor center"
-              width={1024}
-              height={1280}
-              className="w-full aspect-[4/5] object-cover rounded-sm shadow-elevated translate-x-3 translate-y-3 relative z-10"
-            />
-            <div className="absolute inset-0 bg-gold/30" aria-hidden />
+
+          {/* Floating stat strip */}
+          <div className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-4 border-t border-navy/15">
+            {stats.map((s) => (
+              <div key={s.label} className="py-8 md:py-10 border-b md:border-b-0 md:border-r last:border-r-0 border-navy/15 pr-6">
+                <div className="font-serif text-4xl md:text-5xl text-navy-deep">{s.value}</div>
+                <div className="eyebrow text-clay mt-3">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Divisions */}
-      <section className="px-6 md:px-8 py-24 bg-white border-y border-navy/5">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-            <div className="space-y-4">
+      {/* Divisions — icon cards, no photos */}
+      <section className="bg-white border-y border-navy/10">
+        <div className="container-page py-24">
+          <div className="grid md:grid-cols-3 gap-10 mb-16 items-end">
+            <div className="md:col-span-2 space-y-4">
               <span className="eyebrow text-clay">Our Divisions</span>
-              <h2 className="text-4xl md:text-5xl font-serif text-navy-deep">Three Pillars of Change.</h2>
+              <h2 className="text-4xl md:text-6xl font-serif text-navy-deep leading-tight">Three pillars,<br />one mission.</h2>
             </div>
-            <p className="md:max-w-sm text-navy/60 leading-relaxed">
-              From capacity development to economic marketplaces, we address the systemic
-              challenges facing youth, women, and rural communities today.
+            <p className="text-navy/65 leading-relaxed">
+              From capacity development to economic marketplaces, each division addresses systemic
+              challenges facing youth, women, and rural communities.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {divisions.map((d) => (
-              <Link key={d.label} to={d.href} className="group block">
-                <div className="aspect-[3/2] overflow-hidden mb-6 bg-navy/5">
-                  <img
-                    src={d.img}
-                    alt={d.title}
-                    width={1024}
-                    height={768}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                <span className="eyebrow text-clay">{d.label}</span>
-                <h3 className="text-2xl font-serif mt-3 mb-3 group-hover:text-clay transition-colors">{d.title}</h3>
-                <p className="text-sm text-navy/70 leading-relaxed mb-5 italic">{d.body}</p>
-                <div className="h-px w-full bg-navy/10 group-hover:bg-clay transition-colors" />
-                <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-navy group-hover:text-clay">
-                  Learn more <ArrowRight size={14} />
-                </div>
-              </Link>
-            ))}
+          <div className="grid md:grid-cols-3 gap-px bg-navy/10 border border-navy/10">
+            {divisions.map((d, i) => {
+              const Icon = d.icon;
+              return (
+                <Link
+                  key={d.label}
+                  to={d.href}
+                  className="group block bg-cream hover:bg-navy-deep transition-colors duration-500 p-10 md:p-12"
+                >
+                  <div className="flex items-center justify-between mb-10">
+                    <div className="w-14 h-14 grid place-items-center border border-navy/30 group-hover:border-gold group-hover:bg-gold transition-colors">
+                      <Icon size={22} className="text-navy-deep group-hover:text-navy-deep" />
+                    </div>
+                    <span className="font-serif text-5xl text-navy/15 group-hover:text-gold/40 transition-colors">0{i + 1}</span>
+                  </div>
+                  <span className="eyebrow text-clay group-hover:text-gold transition-colors">{d.label}</span>
+                  <h3 className="text-2xl md:text-3xl font-serif mt-3 mb-5 text-navy-deep group-hover:text-cream transition-colors">{d.title}</h3>
+                  <p className="text-sm text-navy/70 group-hover:text-cream/70 leading-relaxed mb-8 transition-colors">{d.body}</p>
+                  <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-navy group-hover:text-gold transition-colors">
+                    Learn more <ArrowRight size={14} />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Impact Numbers */}
-      <section className="bg-navy-deep text-cream py-20 px-6 md:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center md:text-left">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <div className="text-5xl md:text-6xl font-serif text-gold mb-2">{s.value}</div>
-              <div className="eyebrow text-cream/50">{s.label}</div>
+      {/* Mission — quote-led */}
+      <section className="bg-navy-deep text-cream">
+        <div className="container-page py-28 md:py-36 max-w-5xl">
+          <Quote size={56} className="text-gold mb-10" />
+          <blockquote className="font-serif text-3xl md:text-5xl leading-tight">
+            We exist to bridge the gap between <em className="italic text-gold font-normal">rural potential</em> and economic reality — building durable institutions that compound across generations.
+          </blockquote>
+          <div className="mt-14 pt-8 border-t border-cream/15 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <div className="eyebrow text-gold/70">Our Mission</div>
+              <div className="font-serif text-xl mt-2">IMPACT Group of Companies</div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Mission */}
-      <section className="px-6 md:px-8 py-24 bg-cream">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <span className="eyebrow text-clay">Our Mission</span>
-          <h2 className="font-serif text-3xl md:text-5xl text-navy-deep leading-tight">
-            We exist to bridge the gap between rural potential and economic reality.
-          </h2>
-          <p className="text-lg text-navy/70 leading-relaxed">
-            IMPACT Group operates at the intersection of skills development, ethical commerce, and
-            child welfare — building durable institutions that compound across generations.
-          </p>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="bg-white border-y border-navy/5 px-6 md:px-8 py-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16 space-y-4">
-            <span className="eyebrow text-clay">Voices from the Ground</span>
-            <h2 className="text-4xl md:text-5xl font-serif text-navy-deep">Real stories, real change.</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-12">
-            {testimonials.map((t) => (
-              <figure key={t.name} className="space-y-6">
-                <div className="text-gold font-serif text-5xl leading-none">"</div>
-                <blockquote className="font-serif text-xl italic text-navy-deep leading-snug">
-                  {t.quote}
-                </blockquote>
-                <figcaption className="pt-4 border-t border-navy/10">
-                  <div className="text-sm font-semibold text-navy">{t.name}</div>
-                  <div className="text-xs text-navy/60 uppercase tracking-widest mt-1">{t.role}</div>
-                </figcaption>
-              </figure>
-            ))}
+            <Button asChild variant="outline" className="border-cream/30 text-cream hover:bg-gold hover:text-navy-deep hover:border-gold rounded-none px-8 py-6 text-[11px] font-bold uppercase tracking-[0.2em] w-fit">
+              <Link to="/about">Read our story</Link>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Partners */}
-      <section className="px-6 md:px-8 py-16 bg-cream">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="eyebrow text-navy/40 mb-10">Strategic Institutional Partners</p>
-          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-60">
+      <section className="bg-cream">
+        <div className="container-page py-20 text-center">
+          <p className="eyebrow text-navy/40 mb-12">Strategic Institutional Partners</p>
+          <div className="flex flex-wrap justify-center items-center gap-x-14 gap-y-8">
             {["Standard Bank", "SAB Foundation", "NYDA", "Rebosis", "DTIC"].map((p) => (
-              <span key={p} className="font-serif font-bold text-xl tracking-tight text-navy-deep">
+              <span key={p} className="font-serif font-bold text-xl md:text-2xl tracking-tight text-navy-deep/70 hover:text-navy-deep transition-colors">
                 {p}
               </span>
             ))}
@@ -210,21 +161,28 @@ function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="px-6 md:px-8 py-24 bg-navy-deep text-cream">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl font-serif italic text-gold">Join the movement.</h2>
-          <p className="text-cream/70 text-lg max-w-2xl mx-auto">
-            Whether you are a donor, a learner, or a partner, your contribution shapes the future
-            of South Africa. Let's build something meaningful together.
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center pt-4">
-            <Button asChild className="bg-gold hover:bg-gold-soft text-navy-deep rounded-none px-10 py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
-              <Link to="/inqaba">Become a Sponsor</Link>
-            </Button>
-            <Button asChild variant="outline" className="border-cream/30 text-cream hover:bg-cream hover:text-navy-deep rounded-none px-10 py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
-              <Link to="/auth">Create an Account</Link>
-            </Button>
+      {/* CTA — donate-first, no account required */}
+      <section className="bg-white border-t border-navy/10">
+        <div className="container-page py-24 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="eyebrow text-clay">Join the movement</span>
+            <h2 className="font-serif text-4xl md:text-5xl text-navy-deep mt-4 leading-tight">
+              Your contribution shapes <em className="italic text-clay font-normal">South Africa's</em> future.
+            </h2>
+          </div>
+          <div className="space-y-6">
+            <p className="text-navy/70 text-lg leading-relaxed">
+              Make a one-time or recurring donation in under a minute — no account required.
+              Every rand is directed to learners, artisans, and the children of INQABA.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Button asChild className="bg-gold hover:bg-gold-soft text-navy-deep rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
+                <Link to="/donate">Donate</Link>
+              </Button>
+              <Button asChild variant="outline" className="border-navy/30 text-navy rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
+                <Link to="/contact">Partner with us</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

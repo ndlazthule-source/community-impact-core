@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -6,7 +6,6 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
@@ -14,7 +13,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — IMPACT Group" },
-      { name: "description", content: "Sign in or create an account to enrol in ICDA courses, sponsor a child, or shop the IDW marketplace." },
+      { name: "description", content: "Sign in to enrol in ICDA courses, manage your sponsorships, or shop the IDW marketplace." },
     ],
   }),
   beforeLoad: async () => {
@@ -27,9 +26,6 @@ export const Route = createFileRoute("/auth")({
 const signInSchema = z.object({
   email: z.string().trim().email("Invalid email"),
   password: z.string().min(6, "Min 6 characters").max(72),
-});
-const signUpSchema = signInSchema.extend({
-  fullName: z.string().trim().min(2, "Required").max(80),
 });
 
 function AuthPage() {
@@ -59,32 +55,6 @@ function AuthPage() {
     setLoading(false);
     if (error) toast.error(error.message);
     else toast.success("Welcome back.");
-  };
-
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const parsed = signUpSchema.safeParse({
-      email: form.get("email"),
-      password: form.get("password"),
-      fullName: form.get("fullName"),
-    });
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Check your inputs");
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: parsed.data.email,
-      password: parsed.data.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: parsed.data.fullName },
-      },
-    });
-    setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Account created — welcome to IMPACT.");
   };
 
   const handleGoogle = async () => {
@@ -120,10 +90,9 @@ function AuthPage() {
       <section className="container-page py-16 md:py-24">
         <div className="max-w-md mx-auto bg-white border border-navy/10 shadow-card p-8 md:p-10">
           <div className="text-center mb-8">
-            <h1 className="font-serif text-3xl text-navy-deep">Welcome to IMPACT</h1>
-            <p className="text-sm text-navy/60 mt-2">Sign in to enrol, donate, or shop.</p>
+            <h1 className="font-serif text-3xl text-navy-deep">Welcome back</h1>
+            <p className="text-sm text-navy/60 mt-2">Sign in to your IMPACT account.</p>
           </div>
-
 
           <Button
             type="button"
@@ -141,56 +110,33 @@ function AuthPage() {
             <div className="relative flex justify-center text-xs uppercase tracking-widest"><span className="bg-white px-3 text-navy/40">or</span></div>
           </div>
 
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2 rounded-none bg-cream">
-              <TabsTrigger value="signin" className="rounded-none">Sign in</TabsTrigger>
-              <TabsTrigger value="signup" className="rounded-none">Create account</TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div>
+              <Label htmlFor="si-email">Email</Label>
+              <Input id="si-email" name="email" type="email" required className="rounded-none mt-1" />
+            </div>
+            <div>
+              <Label htmlFor="si-password">Password</Label>
+              <Input id="si-password" name="password" type="password" required className="rounded-none mt-1" />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full bg-navy hover:bg-navy-deep text-cream rounded-none py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
+              {loading ? "Signing in…" : "Sign in"}
+            </Button>
+            <button
+              type="button"
+              onClick={handleForgot}
+              className="block w-full text-center text-xs text-navy/60 hover:text-gold underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </button>
+          </form>
 
-            <TabsContent value="signin" className="mt-6">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div>
-                  <Label htmlFor="si-email">Email</Label>
-                  <Input id="si-email" name="email" type="email" required className="rounded-none mt-1" />
-                </div>
-                <div>
-                  <Label htmlFor="si-password">Password</Label>
-                  <Input id="si-password" name="password" type="password" required className="rounded-none mt-1" />
-                </div>
-                <Button type="submit" disabled={loading} className="w-full bg-navy hover:bg-navy-deep text-cream rounded-none py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
-                  {loading ? "Signing in…" : "Sign in"}
-                </Button>
-                <button
-                  type="button"
-                  onClick={handleForgot}
-                  className="block w-full text-center text-xs text-navy/60 hover:text-gold underline-offset-4 hover:underline"
-                >
-                  Forgot password?
-                </button>
-              </form>
-            </TabsContent>
-
-
-            <TabsContent value="signup" className="mt-6">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div>
-                  <Label htmlFor="su-name">Full name</Label>
-                  <Input id="su-name" name="fullName" required className="rounded-none mt-1" />
-                </div>
-                <div>
-                  <Label htmlFor="su-email">Email</Label>
-                  <Input id="su-email" name="email" type="email" required className="rounded-none mt-1" />
-                </div>
-                <div>
-                  <Label htmlFor="su-password">Password</Label>
-                  <Input id="su-password" name="password" type="password" required minLength={6} className="rounded-none mt-1" />
-                </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gold hover:bg-gold-soft text-navy-deep rounded-none py-6 text-[11px] font-bold uppercase tracking-[0.2em]">
-                  {loading ? "Creating…" : "Create account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <p className="text-center text-xs text-navy/60 mt-6">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-navy font-bold underline-offset-4 hover:underline hover:text-gold">
+              Get started
+            </Link>
+          </p>
         </div>
       </section>
     </SiteShell>
