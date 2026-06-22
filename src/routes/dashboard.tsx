@@ -245,6 +245,7 @@ function EnrollmentsPanel({ userId }: { userId: string }) {
         .from("enrollments")
         .select("id, status, enrollment_year, created_at, completed_at, certificate_url, course:courses(id, title, instructor, start_date, end_date)")
         .eq("student_id", userId)
+        .order("enrollment_year", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -256,25 +257,53 @@ function EnrollmentsPanel({ userId }: { userId: string }) {
     return <PanelEmpty msg="You haven't enrolled in any courses yet." cta={{ to: "/icda", label: "Browse courses" }} />;
   }
 
+  const byYear = data.reduce<Record<number, typeof data>>((acc, e) => {
+    (acc[e.enrollment_year] ??= []).push(e);
+    return acc;
+  }, {});
+  const years = Object.keys(byYear).map(Number).sort((a, b) => b - a);
+
+  const statusTone: Record<string, string> = {
+    pending: "border-gold/40 bg-gold/10 text-navy-deep",
+    approved: "border-emerald-600/30 bg-emerald-50 text-emerald-800",
+    rejected: "border-destructive/30 bg-destructive/10 text-destructive",
+    completed: "border-navy/30 bg-navy/5 text-navy-deep",
+    cancelled: "border-navy/20 bg-navy/5 text-navy/60",
+    waitlisted: "border-clay/30 bg-clay/10 text-clay",
+  };
+
   return (
-    <div className="space-y-3">
-      {data.map((e) => {
-        const c = e.course as { title: string; instructor: string | null; start_date: string | null } | null;
-        return (
-          <div key={e.id} className="bg-white border border-navy/10 p-5 flex items-center justify-between gap-4">
-            <div>
-              <h3 className="font-serif text-lg text-navy-deep">{c?.title ?? "Course"}</h3>
-              <div className="text-xs text-navy/60 mt-1">
-                {c?.instructor && <>Instructor · {c.instructor} · </>}Enrolled {new Date(e.created_at).toLocaleDateString()}
-              </div>
-            </div>
-            <Badge variant="outline" className="rounded-none border-navy/20 capitalize">{e.status}</Badge>
+    <div className="space-y-10">
+      {years.map((year) => (
+        <section key={year}>
+          <div className="flex items-baseline gap-3 mb-4 border-b border-navy/10 pb-2">
+            <h2 className="font-serif text-2xl text-navy-deep">{year}</h2>
+            <span className="text-xs text-navy/50 uppercase tracking-widest">{byYear[year].length} enrolment{byYear[year].length === 1 ? "" : "s"}</span>
           </div>
-        );
-      })}
+          <div className="space-y-3">
+            {byYear[year].map((e) => {
+              const c = e.course as { title: string; instructor: string | null; start_date: string | null } | null;
+              return (
+                <div key={e.id} className="bg-white border border-navy/10 p-5 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-serif text-lg text-navy-deep">{c?.title ?? "Course"}</h3>
+                    <div className="text-xs text-navy/60 mt-1">
+                      {c?.instructor && <>Instructor · {c.instructor} · </>}Submitted {new Date(e.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <span className={`text-[11px] uppercase tracking-widest border px-3 py-1 capitalize ${statusTone[e.status] ?? "border-navy/20"}`}>
+                    {e.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
+
 
 function CertificatesPanel({ userId }: { userId: string }) {
   const { data, isLoading } = useQuery({
