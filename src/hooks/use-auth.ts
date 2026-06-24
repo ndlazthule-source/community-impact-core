@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "administrator" | "student" | "donor";
+export type AppRole = "administrator" | "student" | "donor" | "buyer";
 
 export interface AuthState {
   user: User | null;
@@ -22,7 +22,6 @@ export function useAuth(): AuthState {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // Defer the role query to avoid deadlocks inside the auth callback
         setTimeout(() => {
           supabase
             .from("user_roles")
@@ -62,6 +61,11 @@ export function useAuth(): AuthState {
 
 export function primaryRole(roles: AppRole[]): AppRole {
   if (roles.includes("administrator")) return "administrator";
+  if (roles.includes("buyer")) return "buyer";
   if (roles.includes("donor")) return "donor";
   return "student";
+}
+
+export function dashboardPath(role: AppRole): "/idw/dashboard" | "/dashboard" {
+  return role === "buyer" ? "/idw/dashboard" : "/dashboard";
 }

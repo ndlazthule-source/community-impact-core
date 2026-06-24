@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, GraduationCap, ShoppingBag, HeartHandshake, Quote } from "lucide-react";
+import { ArrowRight, GraduationCap, ShoppingBag, HeartHandshake } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
+import heroBanner from "@/assets/hero-banner.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,79 +48,99 @@ const divisions = [
 function HomePage() {
   return (
     <SiteShell>
-      {/* Hero — editorial typographic, no photography */}
-      <section className="relative overflow-hidden bg-cream">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-gold/15 blur-3xl" />
-          <div className="absolute top-1/3 -left-40 w-[420px] h-[420px] rounded-full bg-clay/10 blur-3xl" />
-        </div>
-        <div className="container-page relative py-20 md:py-32">
-          <div className="max-w-4xl">
-            <span className="eyebrow text-clay">Impact Group of Companies</span>
-            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-navy-deep mt-6">
-              Empowering <em className="italic text-clay font-normal">Generations</em>
-              <br />through Action.
+      {/* HERO BANNER — full-bleed image + navy overlay */}
+      <section className="relative min-h-[88vh] flex items-center overflow-hidden">
+        <img
+          src={heroBanner}
+          alt="IMPACT community workshop at dusk"
+          width={1920}
+          height={1280}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-navy-deep/80" />
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, rgba(10,19,45,0.92) 0%, rgba(15,27,61,0.7) 60%, rgba(59,111,160,0.55) 100%)" }}
+        />
+
+        <div className="container-page relative py-24 md:py-32">
+          <div className="max-w-3xl">
+            <span className="tag-pill bg-blue-pill text-navy">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue" />
+              Empowering South Africa Since 2014
+            </span>
+
+            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-white mt-8">
+              Empowering <span className="text-blue-soft">generations</span>
+              <br />through <span className="text-blue-soft">action</span>.
             </h1>
-            <p className="mt-10 text-lg md:text-xl text-navy/75 max-w-2xl leading-relaxed">
+
+            <p className="mt-8 text-lg md:text-xl text-white/80 max-w-2xl leading-relaxed">
               A South African social impact collective dedicated to unlocking human potential in
               rural communities through education, ethical commerce, and child welfare.
             </p>
-            <div className="mt-12 flex flex-wrap gap-4">
-              <Button asChild className="bg-navy hover:bg-navy-deep text-cream rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
-                <Link to="/icda">Explore Our Work</Link>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Button asChild className="bg-blue hover:bg-blue-soft text-white rounded-full px-8 py-7 text-sm font-semibold tracking-wide group">
+                <Link to="/icda">
+                  Explore Our Work
+                  <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
-              <Button asChild variant="outline" className="border-navy/30 text-navy hover:bg-gold hover:text-navy-deep hover:border-gold rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
+              <Button asChild variant="outline" className="border-white/40 bg-white/5 text-white hover:bg-white hover:text-navy-deep rounded-full px-8 py-7 text-sm font-semibold tracking-wide backdrop-blur">
                 <Link to="/donate">Donate Now</Link>
               </Button>
             </div>
           </div>
-
-          {/* Floating stat strip */}
-          <div className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-4 border-t border-navy/15">
-            {stats.map((s) => (
-              <div key={s.label} className="py-8 md:py-10 border-b md:border-b-0 md:border-r last:border-r-0 border-navy/15 pr-6">
-                <div className="font-serif text-4xl md:text-5xl text-navy-deep">{s.value}</div>
-                <div className="eyebrow text-clay mt-3">{s.label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* Divisions — icon cards, no photos */}
-      <section className="bg-white border-y border-navy/10">
+      {/* Stats — clean white band */}
+      <section className="bg-white border-b border-navy/10">
+        <div className="container-page py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <div className="font-serif text-4xl md:text-5xl text-navy-deep">{s.value}</div>
+              <div className="eyebrow text-blue mt-3">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Divisions */}
+      <section className="bg-cream">
         <div className="container-page py-24">
           <div className="grid md:grid-cols-3 gap-10 mb-16 items-end">
             <div className="md:col-span-2 space-y-4">
-              <span className="eyebrow text-clay">Our Divisions</span>
+              <span className="tag-pill">Our Divisions</span>
               <h2 className="text-4xl md:text-6xl font-serif text-navy-deep leading-tight">Three pillars,<br />one mission.</h2>
             </div>
-            <p className="text-navy/65 leading-relaxed">
+            <p className="text-mute leading-relaxed">
               From capacity development to economic marketplaces, each division addresses systemic
               challenges facing youth, women, and rural communities.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-px bg-navy/10 border border-navy/10">
+          <div className="grid md:grid-cols-3 gap-6">
             {divisions.map((d, i) => {
               const Icon = d.icon;
               return (
                 <Link
                   key={d.label}
                   to={d.href}
-                  className="group block bg-cream hover:bg-navy-deep transition-colors duration-500 p-10 md:p-12"
+                  className="group block bg-white hover:shadow-card transition-all duration-300 p-10 rounded-2xl border border-navy/10"
                 >
-                  <div className="flex items-center justify-between mb-10">
-                    <div className="w-14 h-14 grid place-items-center border border-navy/30 group-hover:border-gold group-hover:bg-gold transition-colors">
-                      <Icon size={22} className="text-navy-deep group-hover:text-navy-deep" />
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="w-12 h-12 grid place-items-center rounded-full bg-blue-pill group-hover:bg-blue transition-colors">
+                      <Icon size={20} className="text-navy group-hover:text-white transition-colors" />
                     </div>
-                    <span className="font-serif text-5xl text-navy/15 group-hover:text-gold/40 transition-colors">0{i + 1}</span>
+                    <span className="font-serif text-4xl text-navy/15">0{i + 1}</span>
                   </div>
-                  <span className="eyebrow text-clay group-hover:text-gold transition-colors">{d.label}</span>
-                  <h3 className="text-2xl md:text-3xl font-serif mt-3 mb-5 text-navy-deep group-hover:text-cream transition-colors">{d.title}</h3>
-                  <p className="text-sm text-navy/70 group-hover:text-cream/70 leading-relaxed mb-8 transition-colors">{d.body}</p>
-                  <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-navy group-hover:text-gold transition-colors">
-                    Learn more <ArrowRight size={14} />
+                  <span className="eyebrow text-blue">{d.label}</span>
+                  <h3 className="text-2xl font-serif mt-3 mb-4 text-navy-deep">{d.title}</h3>
+                  <p className="text-sm text-mute leading-relaxed mb-6">{d.body}</p>
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue group-hover:text-navy">
+                    Learn more <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
               );
@@ -128,29 +149,10 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Mission — quote-led */}
-      <section className="bg-navy-deep text-cream">
-        <div className="container-page py-28 md:py-36 max-w-5xl">
-          <Quote size={56} className="text-gold mb-10" />
-          <blockquote className="font-serif text-3xl md:text-5xl leading-tight">
-            We exist to bridge the gap between <em className="italic text-gold font-normal">rural potential</em> and economic reality — building durable institutions that compound across generations.
-          </blockquote>
-          <div className="mt-14 pt-8 border-t border-cream/15 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
-              <div className="eyebrow text-gold/70">Our Mission</div>
-              <div className="font-serif text-xl mt-2">IMPACT Group of Companies</div>
-            </div>
-            <Button asChild variant="outline" className="border-cream/30 text-cream hover:bg-gold hover:text-navy-deep hover:border-gold rounded-none px-8 py-6 text-[11px] font-bold uppercase tracking-[0.2em] w-fit">
-              <Link to="/about">Read our story</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
       {/* Partners */}
-      <section className="bg-cream">
+      <section className="bg-white border-t border-navy/10">
         <div className="container-page py-20 text-center">
-          <p className="eyebrow text-navy/40 mb-12">Strategic Institutional Partners</p>
+          <p className="eyebrow text-mute mb-12">Strategic Institutional Partners</p>
           <div className="flex flex-wrap justify-center items-center gap-x-14 gap-y-8">
             {["Standard Bank", "SAB Foundation", "NYDA", "Rebosis", "DTIC"].map((p) => (
               <span key={p} className="font-serif font-bold text-xl md:text-2xl tracking-tight text-navy-deep/70 hover:text-navy-deep transition-colors">
@@ -161,25 +163,25 @@ function HomePage() {
         </div>
       </section>
 
-      {/* CTA — donate-first, no account required */}
-      <section className="bg-white border-t border-navy/10">
+      {/* CTA */}
+      <section className="bg-cream border-t border-navy/10">
         <div className="container-page py-24 grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="eyebrow text-clay">Join the movement</span>
+            <span className="tag-pill">Join the movement</span>
             <h2 className="font-serif text-4xl md:text-5xl text-navy-deep mt-4 leading-tight">
-              Your contribution shapes <em className="italic text-clay font-normal">South Africa's</em> future.
+              Your contribution shapes <span className="text-blue">South Africa's</span> future.
             </h2>
           </div>
           <div className="space-y-6">
-            <p className="text-navy/70 text-lg leading-relaxed">
+            <p className="text-mute text-lg leading-relaxed">
               Make a one-time or recurring donation in under a minute — no account required.
-              Every rand is directed to learners, artisans, and the children of INQABA.
+              Every rand goes to learners, artisans, and the children of INQABA.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button asChild className="bg-gold hover:bg-gold-soft text-navy-deep rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
-                <Link to="/donate">Donate</Link>
+              <Button asChild className="bg-blue hover:bg-navy text-white rounded-full px-8 py-6 text-sm font-semibold">
+                <Link to="/donate">Donate <ArrowRight size={16} className="ml-2" /></Link>
               </Button>
-              <Button asChild variant="outline" className="border-navy/30 text-navy rounded-none px-10 py-7 text-[11px] font-bold uppercase tracking-[0.2em]">
+              <Button asChild variant="outline" className="border-navy/30 text-navy rounded-full px-8 py-6 text-sm font-semibold">
                 <Link to="/contact">Partner with us</Link>
               </Button>
             </div>

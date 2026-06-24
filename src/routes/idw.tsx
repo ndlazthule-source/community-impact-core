@@ -42,7 +42,7 @@ function IDWPage() {
   const navigate = useNavigate();
 
   const handleAdd = (productId: string) => {
-    if (!user) { navigate({ to: "/auth" }); return; }
+    if (!user) { navigate({ to: "/idw/auth" }); return; }
     if (primaryRole(roles) === "administrator") { navigate({ to: "/dashboard" }); return; }
     addProduct.mutate(productId);
   };
@@ -63,10 +63,10 @@ function IDWPage() {
 
       <section className="container-page py-20">
         {products.length === 0 ? (
-          <div className="bg-white border border-navy/10 p-12 text-center">
-            <p className="text-navy/60">Our marketplace is being curated. Sign up to be notified when collections launch.</p>
-            <Button asChild className="mt-6 bg-navy text-cream rounded-none">
-              <Link to="/auth">Create an Account</Link>
+          <div className="bg-white border border-navy/10 p-12 text-center rounded-xl">
+            <p className="text-mute">Our marketplace is being curated. Create a buyer account to be notified when collections launch.</p>
+            <Button asChild className="mt-6 bg-blue hover:bg-navy text-white rounded-full">
+              <Link to="/idw/auth">Create a buyer account</Link>
             </Button>
           </div>
         ) : (
