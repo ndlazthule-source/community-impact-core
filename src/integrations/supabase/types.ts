@@ -44,6 +44,84 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_payment_methods: {
+        Row: {
+          brand: string
+          cardholder_name: string
+          created_at: string
+          exp_month: number
+          exp_year: number
+          id: string
+          is_default: boolean
+          last4: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          cardholder_name: string
+          created_at?: string
+          exp_month: number
+          exp_year: number
+          id?: string
+          is_default?: boolean
+          last4: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          cardholder_name?: string
+          created_at?: string
+          exp_month?: number
+          exp_year?: number
+          id?: string
+          is_default?: boolean
+          last4?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      buyer_profiles: {
+        Row: {
+          created_at: string
+          delivery_city: string | null
+          delivery_postal_code: string | null
+          delivery_street: string | null
+          delivery_suburb: string | null
+          first_name: string | null
+          last_name: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_city?: string | null
+          delivery_postal_code?: string | null
+          delivery_street?: string | null
+          delivery_suburb?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_city?: string | null
+          delivery_postal_code?: string | null
+          delivery_street?: string | null
+          delivery_suburb?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           course_id: string | null
@@ -530,30 +608,48 @@ export type Database = {
         Row: {
           created_at: string
           currency: string
+          delivery_city: string | null
+          delivery_postal_code: string | null
+          delivery_street: string | null
+          delivery_suburb: string | null
+          fulfillment_status: Database["public"]["Enums"]["fulfillment_status"]
           id: string
           status: Database["public"]["Enums"]["order_status"]
           stripe_session_id: string | null
           total_amount: number
+          tracking_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           currency?: string
+          delivery_city?: string | null
+          delivery_postal_code?: string | null
+          delivery_street?: string | null
+          delivery_suburb?: string | null
+          fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"]
           id?: string
           status?: Database["public"]["Enums"]["order_status"]
           stripe_session_id?: string | null
           total_amount?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           currency?: string
+          delivery_city?: string | null
+          delivery_postal_code?: string | null
+          delivery_street?: string | null
+          delivery_suburb?: string | null
+          fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"]
           id?: string
           status?: Database["public"]["Enums"]["order_status"]
           stripe_session_id?: string | null
           total_amount?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -759,7 +855,7 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "administrator" | "student" | "donor"
+      app_role: "administrator" | "student" | "donor" | "buyer"
       cart_item_type: "product" | "course"
       course_status:
         | "draft"
@@ -782,6 +878,12 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "archived"
+      fulfillment_status:
+        | "processing"
+        | "shipped"
+        | "out_for_delivery"
+        | "delivered"
+        | "cancelled"
       order_status: "pending" | "paid" | "fulfilled" | "cancelled" | "refunded"
       product_status: "draft" | "active" | "sold_out" | "archived"
     }
@@ -911,7 +1013,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["administrator", "student", "donor"],
+      app_role: ["administrator", "student", "donor", "buyer"],
       cart_item_type: ["product", "course"],
       course_status: [
         "draft",
@@ -936,6 +1038,13 @@ export const Constants = {
         "completed",
         "cancelled",
         "archived",
+      ],
+      fulfillment_status: [
+        "processing",
+        "shipped",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
       ],
       order_status: ["pending", "paid", "fulfilled", "cancelled", "refunded"],
       product_status: ["draft", "active", "sold_out", "archived"],
