@@ -18,7 +18,11 @@ export const Route = createFileRoute("/auth")({
   }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/dashboard" });
+    if (data.session) {
+      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.session.user.id);
+      const isBuyer = (r ?? []).some((x) => x.role === "buyer") && !(r ?? []).some((x) => x.role === "administrator");
+      throw redirect({ to: isBuyer ? "/idw/dashboard" : "/dashboard" });
+    }
   },
   component: AuthPage,
 });
