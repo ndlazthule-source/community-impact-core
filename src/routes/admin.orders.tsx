@@ -42,12 +42,23 @@ function AdminOrdersPage() {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: ordersData, error } = await supabase
         .from("orders")
-        .select("id, created_at, total_amount, fulfillment_status, tracking_number, user_id, status, order_items(quantity, unit_price, products(name)), buyer:buyer_profiles!buyer_profiles_user_id_fkey(first_name, last_name, phone, delivery_street, delivery_suburb, delivery_city, delivery_postal_code), profile:profiles!orders_user_id_fkey(full_name, email)")
+        .select("id, created_at, total_amount, fulfillment_status, tracking_number, user_id, status, order_items(quantity, unit_price, products(name))")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      const ids = Array.from(new Set((ordersData ?? []).map((o) => o.user_id).filter(Boolean)));
+      const [{ data: profilesData }, { data: buyersData }] = await Promise.all([
+        ids.length ? supabase.from("profiles").select("id, full_name, email").in("id", ids) : Promise.resolve({ data: [] as { id: string; full_name: string | null; email: string | null }[] }),
+        ids.length ? supabase.from("buyer_profiles").select("user_id, first_name, last_name, phone, delivery_street, delivery_suburb, delivery_city, delivery_postal_code").in("user_id", ids) : Promise.resolve({ data: [] as { user_id: string; first_name: string | null; last_name: string | null; phone: string | null; delivery_street: string | null; delivery_suburb: string | null; delivery_city: string | null; delivery_postal_code: string | null }[] }),
+      ]);
+      const profileMap = new Map((profilesData ?? []).map((p) => [p.id, p]));
+      const buyerMap = new Map((buyersData ?? []).map((b) => [b.user_id, b]));
+      return (ordersData ?? []).map((o) => ({
+        ...o,
+        profile: o.user_id ? profileMap.get(o.user_id) ?? null : null,
+        buyer: o.user_id ? buyerMap.get(o.user_id) ?? null : null,
+      }));
     },
     enabled: !!user && primaryRole(roles) === "administrator",
   });
