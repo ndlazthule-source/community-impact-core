@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useSuspenseQuery, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -180,6 +180,7 @@ function StickyCartBar() {
 /* ------------------ Orders ------------------ */
 function OrdersPanel({ userId }: { userId: string }) {
   const [view, setView] = useState<"current" | "history">("current");
+  const qc = useQueryClient();
   const { data: orders = [] } = useQuery({
     queryKey: ["orders", userId],
     queryFn: async () => {
@@ -191,7 +192,28 @@ function OrdersPanel({ userId }: { userId: string }) {
       if (error) throw error;
       return data ?? [];
     },
+    refetchInterval: 30000,
   });
+
+  // Realtime subscription: live status updates from admin
+  useEffect(() => {
+    const channel = supabase
+      .channel(`orders:${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `user_id=eq.${userId}` },
+        (payload) => {
+          const next = payload.new as { fulfillment_status?: string };
+          if (next?.fulfillment_status) {
+            const label = next.fulfillment_status.replace(/_/g, " ");
+            toast.success(`Order update: ${label}`);
+          }
+          qc.invalidateQueries({ queryKey: ["orders", userId] });
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, qc]);
 
   const current = orders.filter((o) => o.fulfillment_status !== "delivered" && o.fulfillment_status !== "cancelled");
   const past = orders.filter((o) => o.fulfillment_status === "delivered" || o.fulfillment_status === "cancelled");

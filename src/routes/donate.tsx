@@ -76,7 +76,9 @@ function DonatePage() {
     setAmount(500);
     setAnonymous(false);
     setRecurring(false);
-    toast.success("Thank you — your donation has been recorded. We'll be in touch with payment details.");
+    toast.success("Donation successful", {
+      description: "Thank you — your donation has been recorded. We'll be in touch with payment details.",
+    });
   };
 
   return (
