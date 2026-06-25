@@ -112,13 +112,70 @@ function DonorDashboard({ userId }: { userId: string }) {
 
 function AdminDashboard() {
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <AdminCard to="/admin/courses" icon={BookOpen} title="Courses & Enrollments" body="Create courses, set capacity, and approve or reject enrollment requests." />
-      <AdminCard icon={Users} title="User Management" body="View users, assign roles, manage profiles." />
-      <AdminCard icon={ShoppingBag} title="Product Management" body="Manage IDW marketplace inventory and designers." />
-      <AdminCard icon={HeartHandshake} title="Sponsorships" body="Add and manage INQABA child profiles." />
-      <AdminCard icon={GraduationCap} title="Events" body="Create event records, upload galleries, manage feedback." />
-      <AdminCard icon={Settings} title="Reports & Audit" body="Export reports, view audit logs and donations." />
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="grid grid-cols-2 md:grid-cols-6 rounded-none bg-white border border-navy/10 h-auto p-1">
+        <TabTrig value="overview" icon={Settings}>Overview</TabTrig>
+        <TabTrig value="orders" icon={ShoppingBag}>Orders</TabTrig>
+        <TabTrig value="courses" icon={BookOpen}>Courses</TabTrig>
+        <TabTrig value="users" icon={Users}>Users</TabTrig>
+        <TabTrig value="donations" icon={HeartHandshake}>Donations</TabTrig>
+        <TabTrig value="events" icon={GraduationCap}>Events</TabTrig>
+      </TabsList>
+      <TabsContent value="overview" className="mt-8"><AdminOverviewPanel /></TabsContent>
+      <TabsContent value="orders" className="mt-8"><AdminOrdersInline /></TabsContent>
+      <TabsContent value="courses" className="mt-8"><AdminCoursesInline /></TabsContent>
+      <TabsContent value="users" className="mt-8"><AdminUsersInline /></TabsContent>
+      <TabsContent value="donations" className="mt-8"><AdminDonationsInline /></TabsContent>
+      <TabsContent value="events" className="mt-8"><AdminEventsInline /></TabsContent>
+    </Tabs>
+  );
+}
+
+function AdminOverviewPanel() {
+  const { data: stats } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const [orders, donations, users, courses] = await Promise.all([
+        supabase.from("orders").select("id, total_amount, fulfillment_status"),
+        supabase.from("donations").select("id, amount"),
+        supabase.from("profiles").select("id"),
+        supabase.from("courses").select("id, enrolled_count"),
+      ]);
+      const orderRows = orders.data ?? [];
+      return {
+        orders: orderRows.length,
+        active: orderRows.filter((o) => o.fulfillment_status !== "delivered" && o.fulfillment_status !== "cancelled").length,
+        revenue: orderRows.reduce((s, o) => s + Number(o.total_amount ?? 0), 0),
+        donations: donations.data?.length ?? 0,
+        donationsTotal: (donations.data ?? []).reduce((s, d) => s + Number(d.amount ?? 0), 0),
+        users: users.data?.length ?? 0,
+        courses: courses.data?.length ?? 0,
+      };
+    },
+  });
+  const cards = [
+    { label: "Total orders", value: stats?.orders ?? "—", sub: `${stats?.active ?? 0} active` },
+    { label: "Order revenue", value: `R${(stats?.revenue ?? 0).toFixed(0)}` },
+    { label: "Donations", value: stats?.donations ?? "—", sub: `R${(stats?.donationsTotal ?? 0).toFixed(0)} raised` },
+    { label: "Registered users", value: stats?.users ?? "—" },
+    { label: "Courses", value: stats?.courses ?? "—" },
+  ];
+  return (
+    <div className="space-y-6">
+      <div className="grid sm:grid-cols-2 md:grid-cols-5 gap-4">
+        {cards.map((c) => (
+          <div key={c.label} className="bg-white border border-navy/10 p-5">
+            <div className="text-[11px] uppercase tracking-widest text-navy/50">{c.label}</div>
+            <div className="font-serif text-3xl text-navy-deep mt-2">{c.value}</div>
+            {c.sub && <div className="text-xs text-navy/50 mt-1">{c.sub}</div>}
+          </div>
+        ))}
+      </div>
+      <div className="grid md:grid-cols-3 gap-4">
+        <AdminCard to="/admin/orders" icon={ShoppingBag} title="Order Management" body="Review buyer orders, update status, view delivery addresses." />
+        <AdminCard to="/admin/courses" icon={BookOpen} title="Courses & Enrollments" body="Manage course capacity and approve enrollments." />
+        <AdminCard icon={HeartHandshake} title="Donations" body="See all donations on the Donations tab above." />
+      </div>
     </div>
   );
 }
@@ -132,6 +189,185 @@ function AdminCard({ icon: Icon, title, body, to }: { icon: typeof Users; title:
     </div>
   );
   return to ? <Link to={to}>{content}</Link> : content;
+}
+
+function AdminOrdersInline() {
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["admin-orders-inline"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, created_at, total_amount, fulfillment_status, profile:profiles!orders_user_id_fkey(full_name, email)")
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  return (
+    <div className="bg-white border border-navy/10 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-2xl text-navy-deep">Recent Orders</h2>
+        <Link to="/admin/orders" className="text-xs uppercase tracking-widest text-clay hover:underline">Open full manager →</Link>
+      </div>
+      {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : orders.length === 0 ? <div className="text-navy/50 text-sm">No orders yet.</div> : (
+        <div className="divide-y divide-navy/10">
+          {orders.map((o) => {
+            const p = o.profile as { full_name?: string; email?: string } | null;
+            return (
+              <div key={o.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div>
+                  <div className="font-medium text-navy-deep">{p?.full_name ?? p?.email ?? "Buyer"}</div>
+                  <div className="text-xs text-navy/50">#{o.id.slice(0, 8).toUpperCase()} · {new Date(o.created_at).toLocaleDateString()}</div>
+                </div>
+                <span className="text-[11px] uppercase tracking-widest border border-navy/20 px-3 py-1 capitalize">{(o.fulfillment_status ?? "processing").replace(/_/g, " ")}</span>
+                <div className="font-serif text-navy">R{Number(o.total_amount).toFixed(0)}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminCoursesInline() {
+  const { data: courses = [], isLoading } = useQuery({
+    queryKey: ["admin-courses-inline"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("courses").select("id, title, enrolled_count, max_capacity, status, start_date").order("created_at", { ascending: false }).limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  return (
+    <div className="bg-white border border-navy/10 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-2xl text-navy-deep">Courses</h2>
+        <Link to="/admin/courses" className="text-xs uppercase tracking-widest text-clay hover:underline">Manage courses →</Link>
+      </div>
+      {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : courses.length === 0 ? <div className="text-navy/50 text-sm">No courses yet.</div> : (
+        <div className="divide-y divide-navy/10">
+          {courses.map((c) => (
+            <div key={c.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <div>
+                <div className="font-medium text-navy-deep">{c.title}</div>
+                <div className="text-xs text-navy/50">{c.start_date ? new Date(c.start_date).toLocaleDateString() : "TBD"}</div>
+              </div>
+              <div className="text-xs text-navy/60">{c.enrolled_count}/{c.max_capacity} enrolled</div>
+              <span className="text-[11px] uppercase tracking-widest border border-navy/20 px-3 py-1 capitalize">{c.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminUsersInline() {
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["admin-users-inline"],
+    queryFn: async () => {
+      const { data: profiles, error } = await supabase.from("profiles").select("id, full_name, email, created_at").order("created_at", { ascending: false }).limit(50);
+      if (error) throw error;
+      const ids = (profiles ?? []).map((p) => p.id);
+      const { data: rolesData } = ids.length ? await supabase.from("user_roles").select("user_id, role").in("user_id", ids) : { data: [] };
+      const byUser = new Map<string, string[]>();
+      (rolesData ?? []).forEach((r) => {
+        const arr = byUser.get(r.user_id) ?? [];
+        arr.push(r.role);
+        byUser.set(r.user_id, arr);
+      });
+      return (profiles ?? []).map((p) => ({ ...p, roles: byUser.get(p.id) ?? [] }));
+    },
+  });
+  return (
+    <div className="bg-white border border-navy/10 p-6">
+      <h2 className="font-serif text-2xl text-navy-deep mb-4">Users</h2>
+      {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : (
+        <div className="divide-y divide-navy/10">
+          {rows.map((u) => (
+            <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <div>
+                <div className="font-medium text-navy-deep">{u.full_name ?? "—"}</div>
+                <div className="text-xs text-navy/50">{u.email}</div>
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                {u.roles.length === 0 ? <Badge variant="outline" className="text-[10px]">no role</Badge> :
+                  u.roles.map((r) => <Badge key={r} variant="outline" className="text-[10px] capitalize">{r}</Badge>)}
+              </div>
+              <div className="text-xs text-navy/40">{new Date(u.created_at).toLocaleDateString()}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminDonationsInline() {
+  const { data: donations = [], isLoading } = useQuery({
+    queryKey: ["admin-donations-inline"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("donations").select("id, amount, currency, donor_name, donor_email, is_recurring, status, created_at").order("created_at", { ascending: false }).limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const total = donations.reduce((s, d) => s + Number(d.amount ?? 0), 0);
+  return (
+    <div className="bg-white border border-navy/10 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-2xl text-navy-deep">Donations</h2>
+        <div className="text-sm text-navy/60">Total: <span className="font-serif text-navy">R{total.toFixed(0)}</span></div>
+      </div>
+      {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : donations.length === 0 ? <div className="text-navy/50 text-sm">No donations yet.</div> : (
+        <div className="divide-y divide-navy/10">
+          {donations.map((d) => (
+            <div key={d.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <div>
+                <div className="font-medium text-navy-deep">{d.donor_name ?? "Anonymous"}</div>
+                <div className="text-xs text-navy/50">{d.donor_email ?? "—"}</div>
+              </div>
+              <div className="font-serif text-navy">{d.currency} {Number(d.amount).toFixed(2)}{d.is_recurring ? " /mo" : ""}</div>
+              <span className="text-[11px] uppercase tracking-widest border border-navy/20 px-3 py-1 capitalize">{d.status}</span>
+              <div className="text-xs text-navy/40">{new Date(d.created_at).toLocaleDateString()}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminEventsInline() {
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["admin-events-inline"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("events").select("id, title, event_date, status, location").order("event_date", { ascending: false }).limit(30);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  return (
+    <div className="bg-white border border-navy/10 p-6">
+      <h2 className="font-serif text-2xl text-navy-deep mb-4">Events</h2>
+      {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : events.length === 0 ? <div className="text-navy/50 text-sm">No events yet.</div> : (
+        <div className="divide-y divide-navy/10">
+          {events.map((e) => (
+            <div key={e.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <div>
+                <div className="font-medium text-navy-deep">{e.title}</div>
+                <div className="text-xs text-navy/50">{e.location ?? "—"}</div>
+              </div>
+              <div className="text-xs text-navy/60">{e.event_date ? new Date(e.event_date).toLocaleDateString() : "—"}</div>
+              <span className="text-[11px] uppercase tracking-widest border border-navy/20 px-3 py-1 capitalize">{e.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 
