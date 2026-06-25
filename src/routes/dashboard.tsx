@@ -197,11 +197,16 @@ function AdminOrdersInline() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, created_at, total_amount, fulfillment_status, profile:profiles!orders_user_id_fkey(full_name, email)")
+        .select("id, created_at, total_amount, fulfillment_status, user_id")
         .order("created_at", { ascending: false })
         .limit(25);
       if (error) throw error;
-      return data ?? [];
+      const ids = Array.from(new Set((data ?? []).map((o) => o.user_id).filter(Boolean)));
+      const { data: profiles } = ids.length
+        ? await supabase.from("profiles").select("id, full_name, email").in("id", ids)
+        : { data: [] as { id: string; full_name: string | null; email: string | null }[] };
+      const map = new Map((profiles ?? []).map((p) => [p.id, p]));
+      return (data ?? []).map((o) => ({ ...o, profile: o.user_id ? map.get(o.user_id) ?? null : null }));
     },
   });
   return (
