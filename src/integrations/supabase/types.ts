@@ -691,9 +691,11 @@ export type Database = {
           image_url: string | null
           name: string
           price: number
+          side_image_url: string | null
           slug: string
           status: Database["public"]["Enums"]["product_status"]
           stock: number
+          texture_image_url: string | null
           updated_at: string
         }
         Insert: {
@@ -707,9 +709,11 @@ export type Database = {
           image_url?: string | null
           name: string
           price?: number
+          side_image_url?: string | null
           slug: string
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
+          texture_image_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -723,9 +727,11 @@ export type Database = {
           image_url?: string | null
           name?: string
           price?: number
+          side_image_url?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
+          texture_image_url?: string | null
           updated_at?: string
         }
         Relationships: [
