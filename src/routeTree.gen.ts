@@ -25,6 +25,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IdwDashboardRouteImport } from './routes/idw.dashboard'
 import { Route as IdwAuthRouteImport } from './routes/idw.auth'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
 
@@ -108,6 +109,11 @@ const IdwAuthRoute = IdwAuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => IdwRoute,
 } as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/admin/products',
+  path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/admin/orders',
   path: '/admin/orders',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/idw/auth': typeof IdwAuthRoute
   '/idw/dashboard': typeof IdwDashboardRoute
 }
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/idw/auth': typeof IdwAuthRoute
   '/idw/dashboard': typeof IdwDashboardRoute
 }
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/idw/auth': typeof IdwAuthRoute
   '/idw/dashboard': typeof IdwDashboardRoute
 }
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin/courses'
     | '/admin/orders'
+    | '/admin/products'
     | '/idw/auth'
     | '/idw/dashboard'
   fileRoutesByTo: FileRoutesByTo
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin/courses'
     | '/admin/orders'
+    | '/admin/products'
     | '/idw/auth'
     | '/idw/dashboard'
   id:
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin/courses'
     | '/admin/orders'
+    | '/admin/products'
     | '/idw/auth'
     | '/idw/dashboard'
   fileRoutesById: FileRoutesById
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminCoursesRoute: typeof AdminCoursesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdwAuthRouteImport
       parentRoute: typeof IdwRoute
     }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/admin/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/admin/orders'
@@ -422,6 +442,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminCoursesRoute: AdminCoursesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
