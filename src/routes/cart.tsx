@@ -16,13 +16,33 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const { user, roles, loading } = useAuth();
   const navigate = useNavigate();
-  const { items, total, updateQty, remove } = useCart();
+  const { items, total, updateQty, remove, addProduct } = useCart();
 
   useEffect(() => {
     if (loading) return;
-    if (!user) navigate({ to: "/auth" });
-    else if (primaryRole(roles) === "administrator") navigate({ to: "/dashboard" });
-  }, [user, roles, loading, navigate]);
+    if (!user) {
+      // Preserve pending add intent across the sign-in detour.
+      navigate({ to: "/idw/auth" });
+      return;
+    }
+    if (primaryRole(roles) === "administrator") {
+      navigate({ to: "/dashboard" });
+      return;
+    }
+    // Drain any pending "Add to cart" intent captured before authentication.
+    let pending: string | null = null;
+    try { pending = sessionStorage.getItem("idw_pending_add_product"); } catch { pending = null; }
+    if (pending && !addProduct.isPending) {
+      addProduct.mutate(pending, {
+        onSettled: () => {
+          try {
+            sessionStorage.removeItem("idw_pending_add_product");
+            sessionStorage.removeItem("idw_post_auth_return_to");
+          } catch { /* noop */ }
+        },
+      });
+    }
+  }, [user, roles, loading, navigate, addProduct]);
 
   if (loading || !user) {
     return <div className="min-h-screen grid place-items-center bg-cream text-navy/60 text-sm">Loading…</div>;

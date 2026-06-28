@@ -20,6 +20,9 @@ export const Route = createFileRoute("/idw/auth")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
+      // If the user landed here from "Add to cart", honor that intent regardless of role.
+      const pending = typeof window !== "undefined" ? sessionStorage.getItem("idw_pending_add_product") : null;
+      if (pending) throw redirect({ to: "/cart" });
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
@@ -54,7 +57,13 @@ function IDWAuthPage() {
       if (event === "SIGNED_IN" && session) {
         // Ensure buyer role
         await supabase.from("user_roles").insert({ user_id: session.user.id, role: "buyer" }).then(() => null, () => null);
-        navigate({ to: "/idw/dashboard" });
+        const returnTo = sessionStorage.getItem("idw_post_auth_return_to");
+        const pending = sessionStorage.getItem("idw_pending_add_product");
+        if (pending || returnTo === "/cart") {
+          navigate({ to: "/cart" });
+        } else {
+          navigate({ to: "/idw/dashboard" });
+        }
       }
     });
     return () => data.subscription.unsubscribe();
