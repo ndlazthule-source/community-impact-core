@@ -61,8 +61,12 @@ function IDWPage() {
 
   const handleAdd = (productId: string, stock: number) => {
     if (stock <= 0) return;
-    if (!user) { navigate({ to: "/idw/auth" }); return; }
-    if (primaryRole(roles) === "administrator") { navigate({ to: "/dashboard" }); return; }
+    // Only IDW buyers can add to cart — everyone else (guest, student, donor, admin)
+    // is sent to the buyer auth screen to sign in or create a buyer account.
+    if (!user || primaryRole(roles) !== "buyer") {
+      navigate({ to: "/idw/auth" });
+      return;
+    }
     addProduct.mutate(productId);
   };
 
