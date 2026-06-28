@@ -358,7 +358,10 @@ function AdminEventsInline() {
   });
   return (
     <div className="bg-white border border-navy/10 p-6">
-      <h2 className="font-serif text-2xl text-navy-deep mb-4">Events</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-2xl text-navy-deep">Events</h2>
+        <Link to="/admin/events" className="text-xs uppercase tracking-widest text-clay hover:text-navy">Open event manager →</Link>
+      </div>
       {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : events.length === 0 ? <div className="text-navy/50 text-sm">No events yet.</div> : (
         <div className="divide-y divide-navy/10">
           {events.map((e) => (
