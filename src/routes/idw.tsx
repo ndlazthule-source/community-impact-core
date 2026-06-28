@@ -61,13 +61,10 @@ function IDWPage() {
 
   const handleAdd = (productId: string, stock: number) => {
     if (stock <= 0) return;
-    // Only IDW buyers can add to cart — everyone else (guest, student, donor, admin)
-    // is sent to the buyer auth screen to sign in or create a buyer account.
-    if (!user || primaryRole(roles) !== "buyer") {
-      navigate({ to: "/idw/auth" });
-      return;
-    }
-    addProduct.mutate(productId);
+    // Per requirements: every visitor — including signed-in buyers — is routed
+    // through the buyer sign in / sign up screen when they click Add to cart.
+    void user; void roles; void primaryRole; void addProduct; void productId;
+    navigate({ to: "/idw/auth" });
   };
 
   return (
