@@ -175,6 +175,7 @@ function AdminOverviewPanel() {
         <AdminCard to="/admin/products" icon={ShoppingBag} title="Marketplace Products" body="Add items, upload main / side / texture photos, set price and stock." />
         <AdminCard to="/admin/orders" icon={ShoppingBag} title="Order Management" body="Review buyer orders, update status, view delivery addresses." />
         <AdminCard to="/admin/courses" icon={BookOpen} title="Courses & Enrollments" body="Manage course capacity and approve enrollments." />
+        <AdminCard to="/admin/events" icon={GraduationCap} title="Events" body="Publish upcoming events and document past events with outcomes." />
         <AdminCard icon={HeartHandshake} title="Donations" body="See all donations on the Donations tab above." />
       </div>
     </div>
