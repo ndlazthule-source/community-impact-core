@@ -61,9 +61,15 @@ function IDWPage() {
 
   const handleAdd = (productId: string, stock: number) => {
     if (stock <= 0) return;
-    // Per requirements: every visitor — including signed-in buyers — is routed
-    // through the buyer sign in / sign up screen when they click Add to cart.
-    void user; void roles; void primaryRole; void addProduct; void productId;
+    // Per requirements: every visitor — guest, student, donor, admin, AND
+    // signed-in buyers — is routed through the buyer sign in / sign up screen
+    // when they click Add to cart. We stash the intended product so that
+    // after successful auth we can drain it into their cart and land them on /cart.
+    void user; void roles; void primaryRole; void addProduct;
+    try {
+      sessionStorage.setItem("idw_pending_add_product", productId);
+      sessionStorage.setItem("idw_post_auth_return_to", "/cart");
+    } catch { /* sessionStorage unavailable — proceed anyway */ }
     navigate({ to: "/idw/auth" });
   };
 
