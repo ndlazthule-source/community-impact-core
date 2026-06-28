@@ -57,7 +57,13 @@ function IDWAuthPage() {
       if (event === "SIGNED_IN" && session) {
         // Ensure buyer role
         await supabase.from("user_roles").insert({ user_id: session.user.id, role: "buyer" }).then(() => null, () => null);
-        navigate({ to: "/idw/dashboard" });
+        const returnTo = sessionStorage.getItem("idw_post_auth_return_to");
+        const pending = sessionStorage.getItem("idw_pending_add_product");
+        if (pending || returnTo === "/cart") {
+          navigate({ to: "/cart" });
+        } else {
+          navigate({ to: "/idw/dashboard" });
+        }
       }
     });
     return () => data.subscription.unsubscribe();
