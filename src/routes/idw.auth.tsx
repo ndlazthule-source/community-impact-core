@@ -20,6 +20,9 @@ export const Route = createFileRoute("/idw/auth")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
+      // If the user landed here from "Add to cart", honor that intent regardless of role.
+      const pending = typeof window !== "undefined" ? sessionStorage.getItem("idw_pending_add_product") : null;
+      if (pending) throw redirect({ to: "/cart" });
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
