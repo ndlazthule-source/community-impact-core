@@ -47,6 +47,7 @@ function IDWPage() {
   const [search, setSearch] = useState("");
   const [range, setRange] = useState<[number, number]>([0, maxPrice]);
   const [hideOOS, setHideOOS] = useState(false);
+  const [lightbox, setLightbox] = useState<{ urls: string[]; labels: string[]; index: number; title: string } | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -59,12 +60,17 @@ function IDWPage() {
     });
   }, [products, search, range, hideOOS]);
 
+  const openViews = (p: typeof products[number], startIndex = 0) => {
+    const views: { url: string; label: string }[] = [];
+    if (p.image_url) views.push({ url: p.image_url, label: "Front view" });
+    if (p.side_image_url) views.push({ url: p.side_image_url, label: "Side view" });
+    if (p.texture_image_url) views.push({ url: p.texture_image_url, label: "Texture detail" });
+    if (views.length === 0) return;
+    setLightbox({ urls: views.map((v) => v.url), labels: views.map((v) => v.label), index: Math.min(startIndex, views.length - 1), title: p.name });
+  };
+
   const handleAdd = (productId: string, stock: number) => {
     if (stock <= 0) return;
-    // Per requirements: every visitor — guest, student, donor, admin, AND
-    // signed-in buyers — is routed through the buyer sign in / sign up screen
-    // when they click Add to cart. We stash the intended product so that
-    // after successful auth we can drain it into their cart and land them on /cart.
     void user; void roles; void primaryRole; void addProduct;
     try {
       sessionStorage.setItem("idw_pending_add_product", productId);
@@ -72,6 +78,7 @@ function IDWPage() {
     } catch { /* sessionStorage unavailable — proceed anyway */ }
     navigate({ to: "/idw/auth" });
   };
+
 
   return (
     <SiteShell>
