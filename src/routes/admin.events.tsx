@@ -174,7 +174,12 @@ function AdminEventsPage() {
               <Field label="Organizer"><Input value={form.organizer ?? ""} onChange={(e) => setForm({ ...form, organizer: e.target.value })} /></Field>
               <Field label="Attendees"><Input type="number" value={form.attendees_count ?? 0} onChange={(e) => setForm({ ...form, attendees_count: Number(e.target.value) })} /></Field>
             </div>
-            <Field label="Featured image URL"><Input value={form.featured_image ?? ""} onChange={(e) => setForm({ ...form, featured_image: e.target.value })} placeholder="https://…" /></Field>
+            <Field label="Featured image URL (optional — or upload below)"><Input value={form.featured_image ?? ""} onChange={(e) => setForm({ ...form, featured_image: e.target.value })} placeholder="https://…" /></Field>
+            {form.id ? (
+              <EventGalleryManager eventId={form.id} onFeatured={(url) => setForm((f) => ({ ...f, featured_image: url }))} />
+            ) : (
+              <div className="bg-navy/5 border border-navy/10 p-4 text-xs text-navy/60">Save the event first, then you can upload multiple photos (upcoming or past).</div>
+            )}
             <Field label="Description"><Textarea rows={3} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
             <Field label="Objectives"><Textarea rows={2} value={form.objectives ?? ""} onChange={(e) => setForm({ ...form, objectives: e.target.value })} /></Field>
             <Field label="Outcomes (for past events)"><Textarea rows={3} value={form.outcomes ?? ""} onChange={(e) => setForm({ ...form, outcomes: e.target.value })} placeholder="What happened, results, impact…" /></Field>
@@ -190,6 +195,97 @@ function AdminEventsPage() {
     </SiteShell>
   );
 }
+
+function EventGalleryManager({ eventId, onFeatured }: { eventId: string; onFeatured: (url: string) => void }) {
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const { data: images = [] } = useQuery({
+    queryKey: ["event-images", eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("event_images").select("id, image_url, caption, is_featured").eq("event_id", eventId).order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["event-images", eventId] });
+    qc.invalidateQueries({ queryKey: ["event-images-public"] });
+  };
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    try {
+      const path = `${eventId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+      const { error: upErr } = await supabase.storage.from("event-images").upload(path, file, { upsert: false });
+      if (upErr) throw upErr;
+      const { data: signed, error: sErr } = await supabase.storage.from("event-images").createSignedUrl(path, SIGNED_URL_EXPIRY);
+      if (sErr || !signed) throw sErr ?? new Error("Signed URL failed");
+      const { error: insErr } = await supabase.from("event_images").insert({ event_id: eventId, image_url: signed.signedUrl, is_featured: images.length === 0 });
+      if (insErr) throw insErr;
+      if (images.length === 0) onFeatured(signed.signedUrl);
+      toast.success("Photo added.");
+      invalidate();
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setUploading(false); }
+  };
+
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("event_images").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Photo removed."); invalidate();
+  };
+
+  const makeFeatured = async (id: string, url: string) => {
+    await supabase.from("event_images").update({ is_featured: false }).eq("event_id", eventId);
+    const { error } = await supabase.from("event_images").update({ is_featured: true }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    onFeatured(url);
+    toast.success("Featured photo updated."); invalidate();
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-[11px] uppercase tracking-widest text-navy/60">Event photos ({images.length})</Label>
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {images.map((img) => (
+          <div key={img.id} className="aspect-square bg-navy/5 relative group border border-navy/10">
+            <img src={img.image_url} alt={img.caption ?? ""} className="w-full h-full object-cover" />
+            {img.is_featured && <span className="absolute top-1 left-1 bg-clay text-white text-[9px] px-1.5 py-0.5 uppercase tracking-widest">Featured</span>}
+            <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1">
+              {!img.is_featured && <button type="button" onClick={() => makeFeatured(img.id, img.image_url)} title="Set as featured" className="bg-white p-1"><Star size={12} /></button>}
+              <button type="button" onClick={() => remove(img.id)} title="Remove" className="bg-white p-1 text-red-600"><X size={12} /></button>
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="aspect-square border border-dashed border-navy/30 text-navy/50 flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-widest hover:bg-navy/5 disabled:opacity-50"
+        >
+          <Upload size={16} /> {uploading ? "Uploading…" : "Add photo"}
+        </button>
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={async (e) => {
+          const files = Array.from(e.target.files ?? []);
+          for (const f of files) { await upload(f); }
+          e.target.value = "";
+        }}
+      />
+      <p className="text-[10px] text-navy/50">Upload one or many photos. First photo becomes the featured cover; click the star to change it.</p>
+    </div>
+  );
+}
+
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
