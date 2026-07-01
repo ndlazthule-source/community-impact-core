@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar, MapPin, Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Calendar, MapPin, Plus, Pencil, Trash2, ArrowLeft, Upload, X, Star } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, primaryRole } from "@/hooks/use-auth";
 import { toast } from "sonner";
+
+const SIGNED_URL_EXPIRY = 60 * 60 * 24 * 365 * 5; // 5 years
+
 
 export const Route = createFileRoute("/admin/events")({
   head: () => ({ meta: [{ title: "Event Management — Admin" }] }),
