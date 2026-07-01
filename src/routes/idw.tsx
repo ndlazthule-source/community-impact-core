@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { X, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, primaryRole } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+
 
 const productsQuery = queryOptions({
   queryKey: ["products", "public"],
@@ -47,6 +49,7 @@ function IDWPage() {
   const [search, setSearch] = useState("");
   const [range, setRange] = useState<[number, number]>([0, maxPrice]);
   const [hideOOS, setHideOOS] = useState(false);
+  const [lightbox, setLightbox] = useState<{ urls: string[]; labels: string[]; index: number; title: string } | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -59,12 +62,17 @@ function IDWPage() {
     });
   }, [products, search, range, hideOOS]);
 
+  const openViews = (p: typeof products[number], startIndex = 0) => {
+    const views: { url: string; label: string }[] = [];
+    if (p.image_url) views.push({ url: p.image_url, label: "Front view" });
+    if (p.side_image_url) views.push({ url: p.side_image_url, label: "Side view" });
+    if (p.texture_image_url) views.push({ url: p.texture_image_url, label: "Texture detail" });
+    if (views.length === 0) return;
+    setLightbox({ urls: views.map((v) => v.url), labels: views.map((v) => v.label), index: Math.min(startIndex, views.length - 1), title: p.name });
+  };
+
   const handleAdd = (productId: string, stock: number) => {
     if (stock <= 0) return;
-    // Per requirements: every visitor — guest, student, donor, admin, AND
-    // signed-in buyers — is routed through the buyer sign in / sign up screen
-    // when they click Add to cart. We stash the intended product so that
-    // after successful auth we can drain it into their cart and land them on /cart.
     void user; void roles; void primaryRole; void addProduct;
     try {
       sessionStorage.setItem("idw_pending_add_product", productId);
@@ -72,6 +80,7 @@ function IDWPage() {
     } catch { /* sessionStorage unavailable — proceed anyway */ }
     navigate({ to: "/idw/auth" });
   };
+
 
   return (
     <SiteShell>
@@ -131,7 +140,12 @@ function IDWPage() {
               const oos = stock <= 0;
               return (
                 <article key={p.id} className="group">
-                  <div className="aspect-[3/4] bg-navy/5 mb-3 overflow-hidden relative">
+                  <button
+                    type="button"
+                    onClick={() => openViews(p, 0)}
+                    className="block w-full aspect-[3/4] bg-navy/5 mb-3 overflow-hidden relative text-left"
+                    aria-label={`View all photos of ${p.name}`}
+                  >
                     {p.image_url && (
                       <img
                         src={p.image_url}
@@ -145,11 +159,23 @@ function IDWPage() {
                         <span className="text-[11px] uppercase tracking-[0.2em] text-red-700 bg-white px-3 py-1 border border-red-200">Out of stock</span>
                       </div>
                     )}
-                  </div>
+                    <span className="absolute top-2 right-2 bg-white/90 p-1.5 opacity-0 group-hover:opacity-100 transition"><Expand size={14} /></span>
+                  </button>
                   {(p.side_image_url || p.texture_image_url) && (
                     <div className="flex gap-1 mb-2">
-                      {p.side_image_url && <div className="w-10 h-10 bg-navy/5 overflow-hidden"><img src={p.side_image_url} alt="side view" className="w-full h-full object-cover" loading="lazy" /></div>}
-                      {p.texture_image_url && <div className="w-10 h-10 bg-navy/5 overflow-hidden"><img src={p.texture_image_url} alt="texture detail" className="w-full h-full object-cover" loading="lazy" /></div>}
+                      {p.side_image_url && (
+                        <button type="button" onClick={() => openViews(p, 1)} className="w-10 h-10 bg-navy/5 overflow-hidden border border-transparent hover:border-clay" title="Side view">
+                          <img src={p.side_image_url} alt="side view" className="w-full h-full object-cover" loading="lazy" />
+                        </button>
+                      )}
+                      {p.texture_image_url && (
+                        <button type="button" onClick={() => openViews(p, p.side_image_url ? 2 : 1)} className="w-10 h-10 bg-navy/5 overflow-hidden border border-transparent hover:border-clay" title="Texture detail">
+                          <img src={p.texture_image_url} alt="texture detail" className="w-full h-full object-cover" loading="lazy" />
+                        </button>
+                      )}
+                      <button type="button" onClick={() => openViews(p, 0)} className="text-[10px] uppercase tracking-widest text-navy/50 hover:text-clay self-center ml-1">
+                        View all
+                      </button>
                     </div>
                   )}
                   {p.product_categories && (
@@ -182,6 +208,32 @@ function IDWPage() {
           </div>
         )}
       </section>
+
+      {lightbox && (
+        <div className="fixed inset-0 z-[100] bg-black/90 grid place-items-center p-4" onClick={() => setLightbox(null)}>
+          <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 text-white p-2 hover:bg-white/10"><X /></button>
+          <div className="absolute top-4 left-4 text-white text-sm font-serif">{lightbox.title}</div>
+          {lightbox.urls.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.urls.length) % lightbox.urls.length }); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10"
+              ><ChevronLeft /></button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.urls.length }); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10"
+              ><ChevronRight /></button>
+            </>
+          )}
+          <img src={lightbox.urls[lightbox.index]} alt={lightbox.labels[lightbox.index]} className="max-h-[82vh] max-w-[92vw] object-contain" onClick={(e) => e.stopPropagation()} />
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white/80 text-xs">
+            <span className="uppercase tracking-widest">{lightbox.labels[lightbox.index]}</span>
+            <span>·</span>
+            <span>{lightbox.index + 1} / {lightbox.urls.length}</span>
+          </div>
+        </div>
+      )}
     </SiteShell>
   );
 }
+
