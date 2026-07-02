@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, primaryRole } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+import { toast } from "sonner";
 
 
 const productsQuery = queryOptions({
@@ -73,12 +74,31 @@ function IDWPage() {
 
   const handleAdd = (productId: string, stock: number) => {
     if (stock <= 0) return;
-    void user; void roles; void primaryRole; void addProduct;
     try {
       sessionStorage.setItem("idw_pending_add_product", productId);
       sessionStorage.setItem("idw_post_auth_return_to", "/cart");
     } catch { /* sessionStorage unavailable — proceed anyway */ }
-    navigate({ to: "/idw/auth" });
+
+    if (!user) {
+      navigate({ to: "/idw/auth" });
+      return;
+    }
+
+    if (primaryRole(roles) === "administrator") {
+      toast.info("Administrators manage products from the admin dashboard.");
+      navigate({ to: "/dashboard" });
+      return;
+    }
+
+    addProduct.mutate(productId, {
+      onSuccess: () => {
+        try {
+          sessionStorage.removeItem("idw_pending_add_product");
+          sessionStorage.removeItem("idw_post_auth_return_to");
+        } catch { /* noop */ }
+        navigate({ to: "/cart" });
+      },
+    });
   };
 
 
