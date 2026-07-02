@@ -96,7 +96,7 @@ function IDWAuthPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/idw/dashboard`,
+        emailRedirectTo: `${window.location.origin}/idw/auth`,
         data: {
           full_name: `${parsed.data.firstName} ${parsed.data.lastName}`,
           role: "buyer",
@@ -120,7 +120,7 @@ function IDWAuthPage() {
   const handleGoogle = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/idw/dashboard`,
+      redirect_uri: `${window.location.origin}/idw/auth`,
     });
     if (result.error) { setLoading(false); toast.error(result.error.message ?? "Google sign-in failed"); }
   };

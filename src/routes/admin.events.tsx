@@ -75,6 +75,7 @@ function AdminEventsPage() {
 
   const save = useMutation({
     mutationFn: async (f: Partial<EventRow>) => {
+      const isNew = !f.id;
       const payload = {
         title: f.title!, slug: f.slug || slugify(f.title || ""), category: f.category || null,
         description: f.description || null, objectives: f.objectives || null,
@@ -86,14 +87,22 @@ function AdminEventsPage() {
         created_by: user!.id,
       };
       if (f.id) {
-        const { error } = await supabase.from("events").update(payload).eq("id", f.id);
+        const { data, error } = await supabase.from("events").update(payload).eq("id", f.id).select("*").single();
         if (error) throw error;
+        return { event: data as EventRow, isNew };
       } else {
-        const { error } = await supabase.from("events").insert(payload);
+        const { data, error } = await supabase.from("events").insert(payload).select("*").single();
         if (error) throw error;
+        return { event: data as EventRow, isNew };
       }
     },
-    onSuccess: () => { toast.success("Event saved."); setOpen(false); setForm(empty); qc.invalidateQueries({ queryKey: ["admin-events-full"] }); qc.invalidateQueries({ queryKey: ["events", "public"] }); },
+    onSuccess: ({ event, isNew }) => {
+      toast.success(isNew ? "Event saved. You can add photos now." : "Event saved.");
+      setForm(event);
+      if (!isNew) setOpen(false);
+      qc.invalidateQueries({ queryKey: ["admin-events-full"] });
+      qc.invalidateQueries({ queryKey: ["events", "public"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -185,9 +194,9 @@ function AdminEventsPage() {
             <Field label="Outcomes (for past events)"><Textarea rows={3} value={form.outcomes ?? ""} onChange={(e) => setForm({ ...form, outcomes: e.target.value })} placeholder="What happened, results, impact…" /></Field>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => { setOpen(false); setForm(empty); }}>Close</Button>
             <Button onClick={() => save.mutate(form)} disabled={!form.title || !form.event_date || save.isPending} className="bg-navy hover:bg-navy-deep text-cream rounded-none">
-              {save.isPending ? "Saving…" : "Save event"}
+              {save.isPending ? "Saving…" : form.id ? "Save event" : "Save & add photos"}
             </Button>
           </DialogFooter>
         </DialogContent>

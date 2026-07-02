@@ -97,6 +97,16 @@ export function useCart() {
     onSuccess: () => { invalidate(); toast.success("Removed from cart."); },
   });
 
+  const clear = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Sign in to clear your cart.");
+      const { error } = await supabase.from("cart_items").delete().eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { invalidate(); toast.success("Your cart has been cleared."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const items = query.data ?? [];
   const count = items.reduce((n, r) => n + r.quantity, 0);
   const total = items.reduce((sum, r) => {
@@ -104,5 +114,5 @@ export function useCart() {
     return sum + price * r.quantity;
   }, 0);
 
-  return { items, count, total, loading: query.isLoading, addProduct, addCourse, updateQty, remove };
+  return { items, count, total, loading: query.isLoading, addProduct, addCourse, updateQty, remove, clear };
 }

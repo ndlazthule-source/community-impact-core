@@ -16,7 +16,7 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const { user, roles, loading } = useAuth();
   const navigate = useNavigate();
-  const { items, total, updateQty, remove, addProduct } = useCart();
+  const { items, total, updateQty, remove, addProduct, clear } = useCart();
 
   useEffect(() => {
     if (loading) return;
@@ -75,7 +75,20 @@ function CartPage() {
     <SiteShell>
       <section className="container-page py-16">
         <span className="eyebrow text-clay">Checkout</span>
-        <h1 className="font-serif text-4xl md:text-5xl text-navy-deep mt-3 mb-12">Your cart</h1>
+        <div className="flex flex-wrap items-end justify-between gap-4 mt-3 mb-12">
+          <h1 className="font-serif text-4xl md:text-5xl text-navy-deep">Your cart</h1>
+          {items.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => clear.mutate()}
+              disabled={clear.isPending}
+              className="rounded-none border-navy/20 text-navy"
+            >
+              Clear cart
+            </Button>
+          )}
+        </div>
 
         {items.length === 0 ? (
           <div className="bg-white border border-navy/10 p-12 text-center">
