@@ -9,7 +9,6 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
-import { toast } from "sonner";
 
 
 const productsQuery = queryOptions({
