@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
-import { useCart } from "@/hooks/use-cart";
 
 
 const productsQuery = queryOptions({
@@ -41,8 +39,6 @@ export const Route = createFileRoute("/idw")({
 
 function IDWPage() {
   const { data: products } = useSuspenseQuery(productsQuery);
-  const { user } = useAuth();
-  const { addProduct } = useCart();
   const navigate = useNavigate();
 
   const maxPrice = useMemo(() => Math.max(1000, ...products.map((p) => Number(p.price) || 0)), [products]);
@@ -77,21 +73,7 @@ function IDWPage() {
       sessionStorage.setItem("idw_pending_add_product", productId);
       sessionStorage.setItem("idw_post_auth_return_to", "/cart");
     } catch { /* sessionStorage unavailable — proceed anyway */ }
-
-    if (!user) {
-      navigate({ to: "/idw/auth" });
-      return;
-    }
-
-    addProduct.mutate(productId, {
-      onSuccess: () => {
-        try {
-          sessionStorage.removeItem("idw_pending_add_product");
-          sessionStorage.removeItem("idw_post_auth_return_to");
-        } catch { /* noop */ }
-        navigate({ to: "/cart" });
-      },
-    });
+    navigate({ to: "/idw/auth" });
   };
 
 
