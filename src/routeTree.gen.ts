@@ -23,6 +23,7 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IdwIndexRouteImport } from './routes/idw.index'
 import { Route as IdwDashboardRouteImport } from './routes/idw.dashboard'
 import { Route as IdwAuthRouteImport } from './routes/idw.auth'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
@@ -100,6 +101,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IdwIndexRoute = IdwIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IdwRoute,
+} as any)
 const IdwDashboardRoute = IdwDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRoute
   '/idw/auth': typeof IdwAuthRoute
   '/idw/dashboard': typeof IdwDashboardRoute
+  '/idw/': typeof IdwIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -163,7 +170,6 @@ export interface FileRoutesByTo {
   '/donate': typeof DonateRoute
   '/events': typeof EventsRoute
   '/icda': typeof IcdaRoute
-  '/idw': typeof IdwRouteWithChildren
   '/inqaba': typeof InqabaRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -174,6 +180,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRoute
   '/idw/auth': typeof IdwAuthRoute
   '/idw/dashboard': typeof IdwDashboardRoute
+  '/idw': typeof IdwIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,6 +204,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRoute
   '/idw/auth': typeof IdwAuthRoute
   '/idw/dashboard': typeof IdwDashboardRoute
+  '/idw/': typeof IdwIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +229,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/idw/auth'
     | '/idw/dashboard'
+    | '/idw/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,7 +241,6 @@ export interface FileRouteTypes {
     | '/donate'
     | '/events'
     | '/icda'
-    | '/idw'
     | '/inqaba'
     | '/register'
     | '/reset-password'
@@ -243,6 +251,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/idw/auth'
     | '/idw/dashboard'
+    | '/idw'
   id:
     | '__root__'
     | '/'
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/idw/auth'
     | '/idw/dashboard'
+    | '/idw/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -388,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/idw/': {
+      id: '/idw/'
+      path: '/'
+      fullPath: '/idw/'
+      preLoaderRoute: typeof IdwIndexRouteImport
+      parentRoute: typeof IdwRoute
+    }
     '/idw/dashboard': {
       id: '/idw/dashboard'
       path: '/dashboard'
@@ -436,11 +453,13 @@ declare module '@tanstack/react-router' {
 interface IdwRouteChildren {
   IdwAuthRoute: typeof IdwAuthRoute
   IdwDashboardRoute: typeof IdwDashboardRoute
+  IdwIndexRoute: typeof IdwIndexRoute
 }
 
 const IdwRouteChildren: IdwRouteChildren = {
   IdwAuthRoute: IdwAuthRoute,
   IdwDashboardRoute: IdwDashboardRoute,
+  IdwIndexRoute: IdwIndexRoute,
 }
 
 const IdwRouteWithChildren = IdwRoute._addFileChildren(IdwRouteChildren)

@@ -18,16 +18,23 @@ export const Route = createFileRoute("/idw/auth")({
     ],
   }),
   beforeLoad: async () => {
+    const pending = typeof window !== "undefined" ? sessionStorage.getItem("idw_pending_add_product") : null;
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      // If the user landed here from "Add to cart", honor that intent regardless of role.
-      const pending = typeof window !== "undefined" ? sessionStorage.getItem("idw_pending_add_product") : null;
-      if (pending) throw redirect({ to: "/cart" });
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.session.user.id);
       const isBuyer = (roles ?? []).some((r) => r.role === "buyer");
+
+      // Add-to-cart must always enter the buyer flow. Existing buyers continue to cart;
+      // non-buyer sessions are cleared so the dedicated buyer sign-in/sign-up page is shown.
+      if (pending) {
+        if (isBuyer) throw redirect({ to: "/cart" });
+        await supabase.auth.signOut();
+        return;
+      }
+
       if (isBuyer) throw redirect({ to: "/idw/dashboard" });
       throw redirect({ to: "/dashboard" });
     }
