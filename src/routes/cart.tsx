@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
-import { useAuth, primaryRole } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { user, roles, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { items, total, updateQty, remove, addProduct, clear } = useCart();
 
@@ -23,10 +23,6 @@ function CartPage() {
     if (!user) {
       // Preserve pending add intent across the sign-in detour.
       navigate({ to: "/idw/auth" });
-      return;
-    }
-    if (primaryRole(roles) === "administrator") {
-      navigate({ to: "/dashboard" });
       return;
     }
     // Drain any pending "Add to cart" intent captured before authentication.
@@ -42,7 +38,7 @@ function CartPage() {
         },
       });
     }
-  }, [user, roles, loading, navigate, addProduct]);
+  }, [user, loading, navigate, addProduct]);
 
   if (loading || !user) {
     return <div className="min-h-screen grid place-items-center bg-cream text-navy/60 text-sm">Loading…</div>;
