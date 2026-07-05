@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, primaryRole } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
-import { toast } from "sonner";
 
 
 const productsQuery = queryOptions({
@@ -42,7 +41,7 @@ export const Route = createFileRoute("/idw")({
 
 function IDWPage() {
   const { data: products } = useSuspenseQuery(productsQuery);
-  const { user, roles } = useAuth();
+  const { user } = useAuth();
   const { addProduct } = useCart();
   const navigate = useNavigate();
 
@@ -81,12 +80,6 @@ function IDWPage() {
 
     if (!user) {
       navigate({ to: "/idw/auth" });
-      return;
-    }
-
-    if (primaryRole(roles) === "administrator") {
-      toast.info("Administrators manage products from the admin dashboard.");
-      navigate({ to: "/dashboard" });
       return;
     }
 
