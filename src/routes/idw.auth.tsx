@@ -58,6 +58,9 @@ function IDWAuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
