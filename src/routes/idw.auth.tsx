@@ -135,19 +135,23 @@ function IDWAuthPage() {
     if (result.error) { setLoading(false); toast.error(result.error.message ?? "Google sign-in failed"); }
   };
 
-  const handleForgot = async () => {
-    const email = window.prompt("Enter your buyer account email:");
-    if (!email) return;
-    const parsed = z.string().trim().email().safeParse(email);
-    if (!parsed.success) { toast.error("Invalid email."); return; }
+  const handleForgot = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const parsed = z.string().trim().email().safeParse(forgotEmail);
+    if (!parsed.success) { toast.error("Please enter a valid email."); return; }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Check your inbox for the reset link.");
+    else {
+      toast.success("Check your inbox for the reset link.");
+      setShowForgot(false);
+      setForgotEmail("");
+    }
   };
+
 
   return (
     <SiteShell>
