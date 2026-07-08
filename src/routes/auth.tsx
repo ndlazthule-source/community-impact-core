@@ -135,12 +135,31 @@ function AuthPage() {
             </Button>
             <button
               type="button"
-              onClick={handleForgot}
+              onClick={() => setShowForgot((v) => !v)}
               className="block w-full text-center text-xs text-navy/60 hover:text-gold underline-offset-4 hover:underline"
             >
               Forgot password?
             </button>
           </form>
+
+          {showForgot && (
+            <form onSubmit={handleForgot} className="mt-4 border-t border-navy/10 pt-4 space-y-3">
+              <Label htmlFor="fp-email" className="text-xs uppercase tracking-widest text-navy/60">Reset your password</Label>
+              <Input
+                id="fp-email"
+                type="email"
+                required
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="rounded-none"
+              />
+              <Button type="submit" disabled={loading} variant="outline" className="w-full rounded-none border-navy/20 py-5 text-[11px] font-bold uppercase tracking-[0.2em]">
+                {loading ? "Sending…" : "Send reset link"}
+              </Button>
+            </form>
+          )}
+
 
           <p className="text-center text-xs text-navy/60 mt-6">
             Don't have an account?{" "}
