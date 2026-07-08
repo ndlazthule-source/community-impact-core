@@ -209,11 +209,31 @@ function IDWAuthPage() {
               <Button type="submit" disabled={loading} className="w-full bg-blue hover:bg-navy text-white rounded-full py-6 text-sm font-semibold">
                 {loading ? "Signing in…" : "Sign in to IDW"}
               </Button>
-              <button type="button" onClick={handleForgot} className="block w-full text-center text-xs text-mute hover:text-blue underline-offset-4 hover:underline">
+              <button type="button" onClick={() => setShowForgot((v) => !v)} className="block w-full text-center text-xs text-mute hover:text-blue underline-offset-4 hover:underline">
                 Forgot password?
               </button>
             </form>
-          ) : (
+          )}
+
+          {mode === "signin" && showForgot && (
+            <form onSubmit={handleForgot} className="mt-4 border-t border-navy/10 pt-4 space-y-3">
+              <Label htmlFor="fp-email" className="text-xs uppercase tracking-widest text-mute">Reset your password</Label>
+              <Input
+                id="fp-email"
+                type="email"
+                required
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="rounded-md"
+              />
+              <Button type="submit" disabled={loading} variant="outline" className="w-full rounded-full border-navy/20 py-5 text-sm font-semibold">
+                {loading ? "Sending…" : "Send reset link"}
+              </Button>
+            </form>
+          )}
+
+          {mode === "signup" && (
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
