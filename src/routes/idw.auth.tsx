@@ -196,7 +196,7 @@ function IDWAuthPage() {
             <div className="relative flex justify-center text-xs uppercase tracking-widest"><span className="bg-white px-3 text-mute">or</span></div>
           </div>
 
-          {mode === "signin" ? (
+          {mode === "signin" && (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <Label htmlFor="si-email">Email</Label>
