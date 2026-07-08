@@ -75,10 +75,9 @@ function AuthPage() {
     }
   };
 
-  const handleForgot = async () => {
-    const email = window.prompt("Enter your account email to receive a reset link:");
-    if (!email) return;
-    const parsed = z.string().trim().email().safeParse(email);
+  const handleForgot = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const parsed = z.string().trim().email().safeParse(forgotEmail);
     if (!parsed.success) {
       toast.error("Please enter a valid email.");
       return;
@@ -89,8 +88,13 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Check your inbox for the reset link.");
+    else {
+      toast.success("Check your inbox for the reset link.");
+      setShowForgot(false);
+      setForgotEmail("");
+    }
   };
+
 
   return (
     <SiteShell>
