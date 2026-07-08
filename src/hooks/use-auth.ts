@@ -21,6 +21,22 @@ export function useAuth(): AuthState {
     let cancelled = false;
 
     const loadRoles = async (userId: string) => {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("suspended")
+        .eq("id", userId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (prof?.suspended) {
+        await supabase.auth.signOut();
+        if (typeof window !== "undefined") {
+          const { toast } = await import("sonner");
+          toast.error("Your account has been suspended. Please contact an administrator.");
+        }
+        setRoles([]);
+        setLoading(false);
+        return;
+      }
       const { data } = await supabase
         .from("user_roles")
         .select("role")
@@ -29,6 +45,7 @@ export function useAuth(): AuthState {
       setRoles((data ?? []).map((r) => r.role as AppRole));
       setLoading(false);
     };
+
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);

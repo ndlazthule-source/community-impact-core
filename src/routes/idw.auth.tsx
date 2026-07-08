@@ -58,6 +58,9 @@ function IDWAuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -132,19 +135,23 @@ function IDWAuthPage() {
     if (result.error) { setLoading(false); toast.error(result.error.message ?? "Google sign-in failed"); }
   };
 
-  const handleForgot = async () => {
-    const email = window.prompt("Enter your buyer account email:");
-    if (!email) return;
-    const parsed = z.string().trim().email().safeParse(email);
-    if (!parsed.success) { toast.error("Invalid email."); return; }
+  const handleForgot = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const parsed = z.string().trim().email().safeParse(forgotEmail);
+    if (!parsed.success) { toast.error("Please enter a valid email."); return; }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Check your inbox for the reset link.");
+    else {
+      toast.success("Check your inbox for the reset link.");
+      setShowForgot(false);
+      setForgotEmail("");
+    }
   };
+
 
   return (
     <SiteShell>
@@ -189,7 +196,7 @@ function IDWAuthPage() {
             <div className="relative flex justify-center text-xs uppercase tracking-widest"><span className="bg-white px-3 text-mute">or</span></div>
           </div>
 
-          {mode === "signin" ? (
+          {mode === "signin" && (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <Label htmlFor="si-email">Email</Label>
@@ -202,11 +209,31 @@ function IDWAuthPage() {
               <Button type="submit" disabled={loading} className="w-full bg-blue hover:bg-navy text-white rounded-full py-6 text-sm font-semibold">
                 {loading ? "Signing in…" : "Sign in to IDW"}
               </Button>
-              <button type="button" onClick={handleForgot} className="block w-full text-center text-xs text-mute hover:text-blue underline-offset-4 hover:underline">
+              <button type="button" onClick={() => setShowForgot((v) => !v)} className="block w-full text-center text-xs text-mute hover:text-blue underline-offset-4 hover:underline">
                 Forgot password?
               </button>
             </form>
-          ) : (
+          )}
+
+          {mode === "signin" && showForgot && (
+            <form onSubmit={handleForgot} className="mt-4 border-t border-navy/10 pt-4 space-y-3">
+              <Label htmlFor="fp-email" className="text-xs uppercase tracking-widest text-mute">Reset your password</Label>
+              <Input
+                id="fp-email"
+                type="email"
+                required
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="rounded-md"
+              />
+              <Button type="submit" disabled={loading} variant="outline" className="w-full rounded-full border-navy/20 py-5 text-sm font-semibold">
+                {loading ? "Sending…" : "Send reset link"}
+              </Button>
+            </form>
+          )}
+
+          {mode === "signup" && (
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>

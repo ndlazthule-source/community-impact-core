@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, GraduationCap, ShoppingBag, HeartHandshake, Users, BookOpen, Settings,
   Bell, Award, Upload, User as UserIcon, Receipt,
@@ -272,10 +272,11 @@ function AdminCoursesInline() {
 }
 
 function AdminUsersInline() {
+  const qc = useQueryClient();
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-users-inline"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase.from("profiles").select("id, full_name, email, created_at").order("created_at", { ascending: false }).limit(50);
+      const { data: profiles, error } = await supabase.from("profiles").select("id, full_name, email, created_at, suspended").order("created_at", { ascending: false }).limit(50);
       if (error) throw error;
       const ids = (profiles ?? []).map((p) => p.id);
       const { data: rolesData } = ids.length ? await supabase.from("user_roles").select("user_id, role").in("user_id", ids) : { data: [] };
@@ -288,29 +289,56 @@ function AdminUsersInline() {
       return (profiles ?? []).map((p) => ({ ...p, roles: byUser.get(p.id) ?? [] }));
     },
   });
+
+  const toggleSuspend = async (id: string, next: boolean) => {
+    const { error } = await supabase.from("profiles").update({ suspended: next }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Learner suspended." : "Learner reinstated.");
+    qc.invalidateQueries({ queryKey: ["admin-users-inline"] });
+  };
+
   return (
     <div className="bg-white border border-navy/10 p-6">
       <h2 className="font-serif text-2xl text-navy-deep mb-4">Users</h2>
       {isLoading ? <div className="text-navy/50 text-sm">Loading…</div> : (
         <div className="divide-y divide-navy/10">
-          {rows.map((u) => (
-            <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <div>
-                <div className="font-medium text-navy-deep">{u.full_name ?? "—"}</div>
-                <div className="text-xs text-navy/50">{u.email}</div>
+          {rows.map((u) => {
+            const isAdmin = u.roles.includes("administrator");
+            return (
+              <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div className="min-w-[180px]">
+                  <div className="font-medium text-navy-deep flex items-center gap-2">
+                    {u.full_name ?? "—"}
+                    {u.suspended && <Badge className="bg-red-100 text-red-700 hover:bg-red-100 text-[10px]">Suspended</Badge>}
+                  </div>
+                  <div className="text-xs text-navy/50">{u.email}</div>
+                </div>
+                <div className="flex gap-1 flex-wrap">
+                  {u.roles.length === 0 ? <Badge variant="outline" className="text-[10px]">no role</Badge> :
+                    u.roles.map((r) => <Badge key={r} variant="outline" className="text-[10px] capitalize">{r}</Badge>)}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-navy/40">{new Date(u.created_at).toLocaleDateString()}</div>
+                  {!isAdmin && (
+                    <Button
+                      size="sm"
+                      variant={u.suspended ? "outline" : "destructive"}
+                      onClick={() => toggleSuspend(u.id, !u.suspended)}
+                      className="rounded-none text-[10px] uppercase tracking-widest h-8"
+                    >
+                      {u.suspended ? "Unsuspend" : "Suspend"}
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-1 flex-wrap">
-                {u.roles.length === 0 ? <Badge variant="outline" className="text-[10px]">no role</Badge> :
-                  u.roles.map((r) => <Badge key={r} variant="outline" className="text-[10px] capitalize">{r}</Badge>)}
-              </div>
-              <div className="text-xs text-navy/40">{new Date(u.created_at).toLocaleDateString()}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
+
 
 function AdminDonationsInline() {
   const { data: donations = [], isLoading } = useQuery({
