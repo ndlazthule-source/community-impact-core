@@ -35,6 +35,9 @@ const signInSchema = z.object({
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
