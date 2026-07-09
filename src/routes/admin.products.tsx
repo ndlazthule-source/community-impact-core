@@ -148,11 +148,24 @@ function AdminProductsPage() {
                     <span className="font-serif text-xl">R{Number(p.price).toFixed(2)}</span>
                     {stockBadge}
                   </div>
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-navy/10">
+                  <div className="mt-2">
+                    {p.visibility === "public" ? (
+                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-200">Public — everyone can see</span>
+                    ) : (
+                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-widest bg-navy/5 text-navy border border-navy/20">Members only</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-navy/10 flex-wrap">
                     <Button size="sm" variant="ghost" onClick={() => setEditing(p)} className="text-xs"><Pencil size={12} className="mr-1" /> Edit</Button>
+                    {p.visibility === "members_only" ? (
+                      <Button size="sm" variant="ghost" onClick={() => setVisibility(p.id, "public")} className="text-xs text-blue-700 hover:text-blue-800">Make public</Button>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => setVisibility(p.id, "members_only")} className="text-xs">Members only</Button>
+                    )}
                     {!p.archived_at && <Button size="sm" variant="ghost" onClick={() => archive(p.id)} className="text-xs"><Archive size={12} className="mr-1" /> Archive</Button>}
                     <Button size="sm" variant="ghost" onClick={() => remove(p.id)} className="text-xs text-red-600 hover:text-red-700 ml-auto"><Trash2 size={12} /></Button>
                   </div>
+
                 </div>
               );
             })}
