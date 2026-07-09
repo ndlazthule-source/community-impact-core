@@ -31,6 +31,7 @@ type ProductRow = {
   price: number;
   stock: number;
   status: "active" | "draft" | "archived";
+  visibility: "members_only" | "public";
   archived_at: string | null;
 };
 
