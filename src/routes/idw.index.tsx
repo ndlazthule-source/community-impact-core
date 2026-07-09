@@ -116,10 +116,20 @@ function IDWPage() {
       </section>
 
       <section className="container-page pb-20">
-        {filtered.length === 0 ? (
+        {!user && (
+          <div className="mb-6 bg-blue/5 border border-blue/20 p-4 text-sm text-navy/75 flex items-center justify-between flex-wrap gap-3">
+            <span>New designer drops are shown to registered members first. Sign in to see everything currently available.</span>
+            <Button asChild size="sm" className="bg-navy hover:bg-navy-deep text-white rounded-none">
+              <Link to="/idw/auth">Sign in / register</Link>
+            </Button>
+          </div>
+        )}
+        {isLoading || authLoading ? (
+          <div className="bg-white border border-navy/10 p-12 text-center text-navy/50">Loading marketplace…</div>
+        ) : filtered.length === 0 ? (
           <div className="bg-white border border-navy/10 p-12 text-center rounded-xl">
             <p className="text-mute">{products.length === 0 ? "Our marketplace is being curated." : "No items match your filters."}</p>
-            {products.length === 0 && (
+            {products.length === 0 && !user && (
               <Button asChild className="mt-6 bg-blue hover:bg-navy text-white rounded-full">
                 <Link to="/idw/auth">Create a buyer account</Link>
               </Button>
