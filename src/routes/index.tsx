@@ -77,7 +77,7 @@ function HomePage() {
 
             <p className="mt-8 text-lg md:text-xl text-white/80 max-w-2xl leading-relaxed">
               A South African social impact collective dedicated to unlocking human potential in
-              rural communities through education, ethical commerce, and child welfare.
+              communities especially in rural areas through education, ethical commerce, and child welfare.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">

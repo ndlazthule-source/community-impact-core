@@ -107,7 +107,7 @@ export function Header() {
     >
       <div className="container-page flex items-center justify-between py-4">
         <Link to="/" className="font-serif text-2xl font-bold tracking-tight text-navy">
-          IMPACT<span className="text-blue">.</span>
+          IMPACT GroupNet
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7 text-xs font-medium uppercase tracking-[0.12em]">
