@@ -162,6 +162,9 @@ function IDWPage() {
                       </div>
                     )}
                     <span className="absolute top-2 right-2 bg-white/90 p-1.5 opacity-0 group-hover:opacity-100 transition"><Expand size={14} /></span>
+                    {p.visibility === "members_only" && (
+                      <span className="absolute top-2 left-2 text-[10px] uppercase tracking-widest bg-navy text-white px-2 py-1">Members only</span>
+                    )}
                   </button>
                   {(p.side_image_url || p.texture_image_url) && (
                     <div className="flex gap-1 mb-2">
