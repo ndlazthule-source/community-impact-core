@@ -697,6 +697,7 @@ export type Database = {
           stock: number
           texture_image_url: string | null
           updated_at: string
+          visibility: string
         }
         Insert: {
           archived_at?: string | null
@@ -715,6 +716,7 @@ export type Database = {
           stock?: number
           texture_image_url?: string | null
           updated_at?: string
+          visibility?: string
         }
         Update: {
           archived_at?: string | null
@@ -733,6 +735,7 @@ export type Database = {
           stock?: number
           texture_image_url?: string | null
           updated_at?: string
+          visibility?: string
         }
         Relationships: [
           {
