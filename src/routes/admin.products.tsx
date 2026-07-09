@@ -283,7 +283,19 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Visibility</Label>
+              <Select value={form.visibility} onValueChange={(v) => setForm({ ...form, visibility: v as "members_only" | "public" })}>
+                <SelectTrigger className="rounded-none"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="members_only">Members only (registered users)</SelectItem>
+                  <SelectItem value="public">Public (everyone incl. visitors)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-navy/50 mt-1">Start with members only. Promote to public once it performs well.</p>
+            </div>
           </div>
+
 
           <div>
             <Label>Description</Label>
