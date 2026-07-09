@@ -329,9 +329,9 @@ function EnrollmentsAdmin() {
     queryKey: ["enrollment-profiles", studentIds],
     enabled: studentIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", studentIds);
-      const m = new Map<string, { full_name: string | null; email: string | null }>();
-      (data ?? []).forEach((p) => m.set(p.id, { full_name: p.full_name, email: p.email }));
+      const { data } = await supabase.from("profiles").select("id, full_name, email, suspended").in("id", studentIds);
+      const m = new Map<string, { full_name: string | null; email: string | null; suspended: boolean | null }>();
+      (data ?? []).forEach((p) => m.set(p.id, { full_name: p.full_name, email: p.email, suspended: p.suspended }));
       return m;
     },
   });
@@ -344,6 +344,14 @@ function EnrollmentsAdmin() {
     if (error) toast.error(error.message);
     else { toast.success(`Enrollment ${status}.`); qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); }
   };
+
+  const toggleSuspend = async (studentId: string, next: boolean) => {
+    const { error } = await supabase.from("profiles").update({ suspended: next }).eq("id", studentId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Student suspended." : "Student reinstated.");
+    qc.invalidateQueries({ queryKey: ["enrollment-profiles", studentIds] });
+  };
+
 
   const years = useMemo(() => Array.from(new Set((data ?? []).map((e) => e.enrollment_year))).sort((a, b) => b - a), [data]);
 
@@ -417,7 +425,10 @@ function EnrollmentsAdmin() {
                   return (
                     <tr key={e.id} className="border-t border-navy/10">
                       <td className="p-4">
-                        <div className="text-navy-deep">{p?.full_name ?? "—"}</div>
+                        <div className="text-navy-deep flex items-center gap-2">
+                          {p?.full_name ?? "—"}
+                          {p?.suspended && <span className="text-[10px] uppercase tracking-widest bg-red-100 text-red-700 px-2 py-0.5">Suspended</span>}
+                        </div>
                         <div className="text-xs text-navy/50">{p?.email ?? ""}</div>
                       </td>
                       <td className="p-4 text-navy/80">{c?.title ?? "—"}</td>
@@ -433,10 +444,20 @@ function EnrollmentsAdmin() {
                               <X size={14} className="mr-1" /> Reject
                             </Button>
                           </>
+                        ) : e.status === "approved" ? (
+                          <Button
+                            size="sm"
+                            variant={p?.suspended ? "outline" : "destructive"}
+                            className="rounded-none text-[11px] uppercase tracking-widest"
+                            onClick={() => toggleSuspend(e.student_id, !p?.suspended)}
+                          >
+                            {p?.suspended ? "Unsuspend" : "Suspend"}
+                          </Button>
                         ) : (
                           <span className="text-xs text-navy/40">—</span>
                         )}
                       </td>
+
                     </tr>
                   );
                 })}
