@@ -61,7 +61,7 @@ function AdminProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, designer_name, category_id, image_url, side_image_url, texture_image_url, price, stock, status, archived_at")
+        .select("id, name, slug, description, designer_name, category_id, image_url, side_image_url, texture_image_url, price, stock, status, visibility, archived_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as ProductRow[];
