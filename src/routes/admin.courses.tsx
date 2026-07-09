@@ -329,9 +329,9 @@ function EnrollmentsAdmin() {
     queryKey: ["enrollment-profiles", studentIds],
     enabled: studentIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", studentIds);
-      const m = new Map<string, { full_name: string | null; email: string | null }>();
-      (data ?? []).forEach((p) => m.set(p.id, { full_name: p.full_name, email: p.email }));
+      const { data } = await supabase.from("profiles").select("id, full_name, email, suspended").in("id", studentIds);
+      const m = new Map<string, { full_name: string | null; email: string | null; suspended: boolean | null }>();
+      (data ?? []).forEach((p) => m.set(p.id, { full_name: p.full_name, email: p.email, suspended: p.suspended }));
       return m;
     },
   });
@@ -344,6 +344,14 @@ function EnrollmentsAdmin() {
     if (error) toast.error(error.message);
     else { toast.success(`Enrollment ${status}.`); qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); }
   };
+
+  const toggleSuspend = async (studentId: string, next: boolean) => {
+    const { error } = await supabase.from("profiles").update({ suspended: next }).eq("id", studentId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Student suspended." : "Student reinstated.");
+    qc.invalidateQueries({ queryKey: ["enrollment-profiles", studentIds] });
+  };
+
 
   const years = useMemo(() => Array.from(new Set((data ?? []).map((e) => e.enrollment_year))).sort((a, b) => b - a), [data]);
 
