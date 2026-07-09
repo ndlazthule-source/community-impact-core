@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -7,20 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
-
-const productsQuery = queryOptions({
-  queryKey: ["products", "public"],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, name, slug, description, designer_name, image_url, side_image_url, texture_image_url, price, stock, product_categories(name)")
-      .is("archived_at", null)
-      .eq("status", "active")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  },
-});
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/idw/")({
   head: () => ({
@@ -30,15 +17,27 @@ export const Route = createFileRoute("/idw/")({
       { property: "og:title", content: "IDW Marketplace — Designers Warehouse" },
     ],
   }),
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(productsQuery);
-  },
   component: IDWPage,
 });
 
 function IDWPage() {
-  const { data: products } = useSuspenseQuery(productsQuery);
+  const { user, loading: authLoading } = useAuth();
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products", "list", user ? "member" : "public"],
+    enabled: !authLoading,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, slug, description, designer_name, image_url, side_image_url, texture_image_url, price, stock, visibility, product_categories(name)")
+        .is("archived_at", null)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const navigate = useNavigate();
+
 
   const maxPrice = useMemo(() => Math.max(1000, ...products.map((p) => Number(p.price) || 0)), [products]);
   const [search, setSearch] = useState("");
