@@ -93,6 +93,13 @@ function AdminProductsPage() {
     qc.invalidateQueries({ queryKey: ["admin-products"] });
   };
 
+  const setVisibility = async (id: string, visibility: "members_only" | "public") => {
+    const { error } = await supabase.from("products").update({ visibility }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(visibility === "public" ? "Now visible to everyone." : "Restricted to registered members.");
+    qc.invalidateQueries({ queryKey: ["admin-products"] });
+  };
+
   if (loading || !user) return <div className="min-h-screen grid place-items-center bg-cream text-navy/60 text-sm">Loading…</div>;
 
   return (
