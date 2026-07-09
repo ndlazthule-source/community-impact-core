@@ -31,6 +31,7 @@ type ProductRow = {
   price: number;
   stock: number;
   status: "active" | "draft" | "archived";
+  visibility: "members_only" | "public";
   archived_at: string | null;
 };
 
@@ -60,7 +61,7 @@ function AdminProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, designer_name, category_id, image_url, side_image_url, texture_image_url, price, stock, status, archived_at")
+        .select("id, name, slug, description, designer_name, category_id, image_url, side_image_url, texture_image_url, price, stock, status, visibility, archived_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as ProductRow[];
@@ -89,6 +90,13 @@ function AdminProductsPage() {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Product deleted.");
+    qc.invalidateQueries({ queryKey: ["admin-products"] });
+  };
+
+  const setVisibility = async (id: string, visibility: "members_only" | "public") => {
+    const { error } = await supabase.from("products").update({ visibility }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(visibility === "public" ? "Now visible to everyone." : "Restricted to registered members.");
     qc.invalidateQueries({ queryKey: ["admin-products"] });
   };
 
@@ -140,11 +148,24 @@ function AdminProductsPage() {
                     <span className="font-serif text-xl">R{Number(p.price).toFixed(2)}</span>
                     {stockBadge}
                   </div>
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-navy/10">
+                  <div className="mt-2">
+                    {p.visibility === "public" ? (
+                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-200">Public — everyone can see</span>
+                    ) : (
+                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-widest bg-navy/5 text-navy border border-navy/20">Members only</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-navy/10 flex-wrap">
                     <Button size="sm" variant="ghost" onClick={() => setEditing(p)} className="text-xs"><Pencil size={12} className="mr-1" /> Edit</Button>
+                    {p.visibility === "members_only" ? (
+                      <Button size="sm" variant="ghost" onClick={() => setVisibility(p.id, "public")} className="text-xs text-blue-700 hover:text-blue-800">Make public</Button>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => setVisibility(p.id, "members_only")} className="text-xs">Members only</Button>
+                    )}
                     {!p.archived_at && <Button size="sm" variant="ghost" onClick={() => archive(p.id)} className="text-xs"><Archive size={12} className="mr-1" /> Archive</Button>}
                     <Button size="sm" variant="ghost" onClick={() => remove(p.id)} className="text-xs text-red-600 hover:text-red-700 ml-auto"><Trash2 size={12} /></Button>
                   </div>
+
                 </div>
               );
             })}
@@ -174,6 +195,7 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
     price: product?.price?.toString() ?? "0",
     stock: product?.stock?.toString() ?? "0",
     status: product?.status ?? "active",
+    visibility: (product?.visibility ?? "members_only") as "members_only" | "public",
     image_url: product?.image_url ?? "",
     side_image_url: product?.side_image_url ?? "",
     texture_image_url: product?.texture_image_url ?? "",
@@ -202,6 +224,7 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
       price: Number(form.price) || 0,
       stock: Math.max(0, Math.floor(Number(form.stock) || 0)),
       status: form.status as "active" | "draft" | "archived",
+      visibility: form.visibility,
       image_url: form.image_url || null,
       side_image_url: form.side_image_url || null,
       texture_image_url: form.texture_image_url || null,
@@ -260,7 +283,19 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Visibility</Label>
+              <Select value={form.visibility} onValueChange={(v) => setForm({ ...form, visibility: v as "members_only" | "public" })}>
+                <SelectTrigger className="rounded-none"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="members_only">Members only (registered users)</SelectItem>
+                  <SelectItem value="public">Public (everyone incl. visitors)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-navy/50 mt-1">Start with members only. Promote to public once it performs well.</p>
+            </div>
           </div>
+
 
           <div>
             <Label>Description</Label>

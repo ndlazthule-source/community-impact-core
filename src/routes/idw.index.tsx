@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -7,20 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
-
-const productsQuery = queryOptions({
-  queryKey: ["products", "public"],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, name, slug, description, designer_name, image_url, side_image_url, texture_image_url, price, stock, product_categories(name)")
-      .is("archived_at", null)
-      .eq("status", "active")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  },
-});
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/idw/")({
   head: () => ({
@@ -30,15 +17,27 @@ export const Route = createFileRoute("/idw/")({
       { property: "og:title", content: "IDW Marketplace — Designers Warehouse" },
     ],
   }),
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(productsQuery);
-  },
   component: IDWPage,
 });
 
 function IDWPage() {
-  const { data: products } = useSuspenseQuery(productsQuery);
+  const { user, loading: authLoading } = useAuth();
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products", "list", user ? "member" : "public"],
+    enabled: !authLoading,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, slug, description, designer_name, image_url, side_image_url, texture_image_url, price, stock, visibility, product_categories(name)")
+        .is("archived_at", null)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const navigate = useNavigate();
+
 
   const maxPrice = useMemo(() => Math.max(1000, ...products.map((p) => Number(p.price) || 0)), [products]);
   const [search, setSearch] = useState("");
@@ -117,10 +116,20 @@ function IDWPage() {
       </section>
 
       <section className="container-page pb-20">
-        {filtered.length === 0 ? (
+        {!user && (
+          <div className="mb-6 bg-blue/5 border border-blue/20 p-4 text-sm text-navy/75 flex items-center justify-between flex-wrap gap-3">
+            <span>New designer drops are shown to registered members first. Sign in to see everything currently available.</span>
+            <Button asChild size="sm" className="bg-navy hover:bg-navy-deep text-white rounded-none">
+              <Link to="/idw/auth">Sign in / register</Link>
+            </Button>
+          </div>
+        )}
+        {isLoading || authLoading ? (
+          <div className="bg-white border border-navy/10 p-12 text-center text-navy/50">Loading marketplace…</div>
+        ) : filtered.length === 0 ? (
           <div className="bg-white border border-navy/10 p-12 text-center rounded-xl">
             <p className="text-mute">{products.length === 0 ? "Our marketplace is being curated." : "No items match your filters."}</p>
-            {products.length === 0 && (
+            {products.length === 0 && !user && (
               <Button asChild className="mt-6 bg-blue hover:bg-navy text-white rounded-full">
                 <Link to="/idw/auth">Create a buyer account</Link>
               </Button>
@@ -153,6 +162,9 @@ function IDWPage() {
                       </div>
                     )}
                     <span className="absolute top-2 right-2 bg-white/90 p-1.5 opacity-0 group-hover:opacity-100 transition"><Expand size={14} /></span>
+                    {p.visibility === "members_only" && (
+                      <span className="absolute top-2 left-2 text-[10px] uppercase tracking-widest bg-navy text-white px-2 py-1">Members only</span>
+                    )}
                   </button>
                   {(p.side_image_url || p.texture_image_url) && (
                     <div className="flex gap-1 mb-2">
