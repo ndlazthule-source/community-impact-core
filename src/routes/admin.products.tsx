@@ -224,6 +224,7 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
       price: Number(form.price) || 0,
       stock: Math.max(0, Math.floor(Number(form.stock) || 0)),
       status: form.status as "active" | "draft" | "archived",
+      visibility: form.visibility,
       image_url: form.image_url || null,
       side_image_url: form.side_image_url || null,
       texture_image_url: form.texture_image_url || null,
