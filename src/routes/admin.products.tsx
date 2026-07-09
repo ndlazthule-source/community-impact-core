@@ -195,6 +195,7 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
     price: product?.price?.toString() ?? "0",
     stock: product?.stock?.toString() ?? "0",
     status: product?.status ?? "active",
+    visibility: (product?.visibility ?? "members_only") as "members_only" | "public",
     image_url: product?.image_url ?? "",
     side_image_url: product?.side_image_url ?? "",
     texture_image_url: product?.texture_image_url ?? "",
