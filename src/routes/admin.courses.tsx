@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAuth, primaryRole } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SuspensionDialog, type SuspensionSubject } from "@/components/admin/SuspensionDialog";
 
 export const Route = createFileRoute("/admin/courses")({
   head: () => ({ meta: [{ title: "Course & Enrollment Management — Admin" }] }),
