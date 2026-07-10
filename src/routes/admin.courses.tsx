@@ -354,12 +354,18 @@ function EnrollmentsAdmin() {
   };
 
 
-  const toggleSuspend = async (studentId: string, next: boolean) => {
-    const { error } = await supabase.from("profiles").update({ suspended: next }).eq("id", studentId);
-    if (error) { toast.error(error.message); return; }
-    toast.success(next ? "Student suspended." : "Student reinstated.");
-    qc.invalidateQueries({ queryKey: ["enrollment-profiles", studentIds] });
+  const openSuspend = (studentId: string) => {
+    const p = profiles?.get(studentId);
+    setSuspendTarget({
+      id: studentId,
+      name: p?.full_name ?? p?.email ?? null,
+      suspended: p?.suspended ?? false,
+      suspension_type: p?.suspension_type ?? null,
+      suspension_reason: p?.suspension_reason ?? null,
+      suspended_until: p?.suspended_until ?? null,
+    });
   };
+
 
 
   const years = useMemo(() => Array.from(new Set((data ?? []).map((e) => e.enrollment_year))).sort((a, b) => b - a), [data]);
