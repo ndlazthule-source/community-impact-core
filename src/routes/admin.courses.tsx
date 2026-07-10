@@ -489,6 +489,15 @@ function EnrollmentsAdmin() {
           </div>
         </section>
       ))}
+      {suspendTarget && (
+        <SuspensionDialog
+          subject={suspendTarget}
+          open
+          onOpenChange={(v) => { if (!v) setSuspendTarget(null); }}
+          onDone={() => { setSuspendTarget(null); qc.invalidateQueries({ queryKey: ["enrollment-profiles", studentIds] }); }}
+        />
+      )}
     </div>
   );
 }
+
