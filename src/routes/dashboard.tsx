@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SuspensionBanner } from "@/components/site/SuspensionBanner";
+import { SuspensionDialog, type SuspensionSubject } from "@/components/admin/SuspensionDialog";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — IMPACT Group" }] }),
