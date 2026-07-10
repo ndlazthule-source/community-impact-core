@@ -760,6 +760,10 @@ export type Database = {
           id: string
           phone: string | null
           suspended: boolean
+          suspended_at: string | null
+          suspended_until: string | null
+          suspension_reason: string | null
+          suspension_type: string | null
           updated_at: string
         }
         Insert: {
@@ -774,6 +778,10 @@ export type Database = {
           id: string
           phone?: string | null
           suspended?: boolean
+          suspended_at?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          suspension_type?: string | null
           updated_at?: string
         }
         Update: {
@@ -788,6 +796,10 @@ export type Database = {
           id?: string
           phone?: string | null
           suspended?: boolean
+          suspended_at?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          suspension_type?: string | null
           updated_at?: string
         }
         Relationships: []
