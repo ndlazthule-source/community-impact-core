@@ -472,9 +472,9 @@ function EnrollmentsAdmin() {
                             size="sm"
                             variant={p?.suspended ? "outline" : "destructive"}
                             className="rounded-none text-[11px] uppercase tracking-widest"
-                            onClick={() => toggleSuspend(e.student_id, !p?.suspended)}
+                            onClick={() => openSuspend(e.student_id)}
                           >
-                            {p?.suspended ? "Unsuspend" : "Suspend"}
+                            {p?.suspended ? "Manage" : "Suspend"}
                           </Button>
                         ) : (
                           <span className="text-xs text-navy/40">—</span>
