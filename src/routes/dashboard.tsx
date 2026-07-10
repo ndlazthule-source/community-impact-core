@@ -58,6 +58,8 @@ function DashboardPage() {
           </Button>
         </div>
 
+        {(role === "student" || role === "donor") && <SuspensionBanner />}
+
         {role === "administrator" && <AdminDashboard />}
         {role === "donor" && <DonorDashboard userId={user.id} />}
         {role === "student" && <StudentDashboard userId={user.id} />}
