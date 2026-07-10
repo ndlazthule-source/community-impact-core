@@ -440,11 +440,19 @@ function EnrollmentsAdmin() {
                   return (
                     <tr key={e.id} className="border-t border-navy/10">
                       <td className="p-4">
-                        <div className="text-navy-deep flex items-center gap-2">
+                        <div className="text-navy-deep flex items-center gap-2 flex-wrap">
                           {p?.full_name ?? "—"}
-                          {p?.suspended && <span className="text-[10px] uppercase tracking-widest bg-red-100 text-red-700 px-2 py-0.5">Suspended</span>}
+                          {p?.suspended && (
+                            <span className="text-[10px] uppercase tracking-widest bg-red-100 text-red-700 px-2 py-0.5">
+                              {p.suspension_type ?? "suspended"}
+                              {p.suspended_until ? ` · until ${new Date(p.suspended_until).toLocaleDateString()}` : ""}
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-navy/50">{p?.email ?? ""}</div>
+                        {p?.suspended && p?.suspension_reason && (
+                          <div className="text-[11px] text-red-700/80 mt-1">Reason: {p.suspension_reason}</div>
+                        )}
                       </td>
                       <td className="p-4 text-navy/80">{c?.title ?? "—"}</td>
                       <td className="p-4 text-xs text-navy/60">{new Date(e.created_at).toLocaleDateString()}</td>
