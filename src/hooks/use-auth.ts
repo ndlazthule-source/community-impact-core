@@ -4,17 +4,26 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "administrator" | "student" | "donor" | "buyer";
 
+export interface Suspension {
+  type: "temporary" | "permanent";
+  reason: string | null;
+  suspendedAt: string | null;
+  suspendedUntil: string | null;
+}
+
 export interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
   roles: AppRole[];
+  suspension: Suspension | null;
 }
 
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [suspension, setSuspension] = useState<Suspension | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,20 +32,32 @@ export function useAuth(): AuthState {
     const loadRoles = async (userId: string) => {
       const { data: prof } = await supabase
         .from("profiles")
-        .select("suspended")
+        .select("suspended, suspension_type, suspension_reason, suspended_at, suspended_until")
         .eq("id", userId)
         .maybeSingle();
       if (cancelled) return;
-      if (prof?.suspended) {
-        await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          const { toast } = await import("sonner");
-          toast.error("Your account has been suspended. Please contact an administrator.");
-        }
-        setRoles([]);
-        setLoading(false);
-        return;
+
+      let active = !!prof?.suspended;
+      // Auto-lift expired temporary suspensions
+      if (active && prof?.suspension_type === "temporary" && prof.suspended_until && new Date(prof.suspended_until) <= new Date()) {
+        await supabase
+          .from("profiles")
+          .update({ suspended: false, suspension_type: null, suspension_reason: null, suspended_at: null, suspended_until: null })
+          .eq("id", userId);
+        active = false;
       }
+
+      if (active) {
+        setSuspension({
+          type: (prof?.suspension_type as "temporary" | "permanent") ?? "permanent",
+          reason: prof?.suspension_reason ?? null,
+          suspendedAt: prof?.suspended_at ?? null,
+          suspendedUntil: prof?.suspended_until ?? null,
+        });
+      } else {
+        setSuspension(null);
+      }
+
       const { data } = await supabase
         .from("user_roles")
         .select("role")
@@ -46,19 +67,17 @@ export function useAuth(): AuthState {
       setLoading(false);
     };
 
-
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
         setLoading(true);
         setRoles([]);
-        // Defer to avoid deadlocks inside the auth callback
-        setTimeout(() => {
-          if (!cancelled) loadRoles(s.user.id);
-        }, 0);
+        setSuspension(null);
+        setTimeout(() => { if (!cancelled) loadRoles(s.user.id); }, 0);
       } else {
         setRoles([]);
+        setSuspension(null);
         setLoading(false);
       }
     });
@@ -80,7 +99,7 @@ export function useAuth(): AuthState {
     };
   }, []);
 
-  return { user, session, roles, loading };
+  return { user, session, roles, loading, suspension };
 }
 
 export function primaryRole(roles: AppRole[]): AppRole {
