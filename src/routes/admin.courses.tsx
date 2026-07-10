@@ -311,6 +311,7 @@ function EnrollmentsAdmin() {
   const qc = useQueryClient();
   const [yearFilter, setYearFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [suspendTarget, setSuspendTarget] = useState<SuspensionSubject | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-enrollments"],
@@ -330,9 +331,15 @@ function EnrollmentsAdmin() {
     queryKey: ["enrollment-profiles", studentIds],
     enabled: studentIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email, suspended").in("id", studentIds);
-      const m = new Map<string, { full_name: string | null; email: string | null; suspended: boolean | null }>();
-      (data ?? []).forEach((p) => m.set(p.id, { full_name: p.full_name, email: p.email, suspended: p.suspended }));
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, suspended, suspension_type, suspension_reason, suspended_until")
+        .in("id", studentIds);
+      const m = new Map<string, { full_name: string | null; email: string | null; suspended: boolean | null; suspension_type: string | null; suspension_reason: string | null; suspended_until: string | null }>();
+      (data ?? []).forEach((p) => m.set(p.id, {
+        full_name: p.full_name, email: p.email, suspended: p.suspended,
+        suspension_type: p.suspension_type, suspension_reason: p.suspension_reason, suspended_until: p.suspended_until,
+      }));
       return m;
     },
   });
@@ -345,6 +352,7 @@ function EnrollmentsAdmin() {
     if (error) toast.error(error.message);
     else { toast.success(`Enrollment ${status}.`); qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); }
   };
+
 
   const toggleSuspend = async (studentId: string, next: boolean) => {
     const { error } = await supabase.from("profiles").update({ suspended: next }).eq("id", studentId);
