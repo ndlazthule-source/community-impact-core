@@ -277,10 +277,15 @@ function AdminCoursesInline() {
 
 function AdminUsersInline() {
   const qc = useQueryClient();
+  const [suspendTarget, setSuspendTarget] = useState<SuspensionSubject | null>(null);
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-users-inline"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase.from("profiles").select("id, full_name, email, created_at, suspended").order("created_at", { ascending: false }).limit(50);
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, created_at, suspended, suspension_type, suspension_reason, suspended_at, suspended_until")
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
       const ids = (profiles ?? []).map((p) => p.id);
       const { data: rolesData } = ids.length ? await supabase.from("user_roles").select("user_id, role").in("user_id", ids) : { data: [] };
@@ -294,13 +299,6 @@ function AdminUsersInline() {
     },
   });
 
-  const toggleSuspend = async (id: string, next: boolean) => {
-    const { error } = await supabase.from("profiles").update({ suspended: next }).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    toast.success(next ? "Learner suspended." : "Learner reinstated.");
-    qc.invalidateQueries({ queryKey: ["admin-users-inline"] });
-  };
-
   return (
     <div className="bg-white border border-navy/10 p-6">
       <h2 className="font-serif text-2xl text-navy-deep mb-4">Users</h2>
@@ -308,14 +306,23 @@ function AdminUsersInline() {
         <div className="divide-y divide-navy/10">
           {rows.map((u) => {
             const isAdmin = u.roles.includes("administrator");
+            const until = u.suspended_until ? new Date(u.suspended_until) : null;
             return (
               <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <div className="min-w-[180px]">
-                  <div className="font-medium text-navy-deep flex items-center gap-2">
+                  <div className="font-medium text-navy-deep flex items-center gap-2 flex-wrap">
                     {u.full_name ?? "—"}
-                    {u.suspended && <Badge className="bg-red-100 text-red-700 hover:bg-red-100 text-[10px]">Suspended</Badge>}
+                    {u.suspended && (
+                      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 text-[10px] capitalize">
+                        {u.suspension_type ?? "suspended"}
+                        {until ? ` · until ${until.toLocaleDateString()}` : ""}
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-xs text-navy/50">{u.email}</div>
+                  {u.suspended && u.suspension_reason && (
+                    <div className="text-[11px] text-red-700/80 mt-1 max-w-md">Reason: {u.suspension_reason}</div>
+                  )}
                 </div>
                 <div className="flex gap-1 flex-wrap">
                   {u.roles.length === 0 ? <Badge variant="outline" className="text-[10px]">no role</Badge> :
@@ -327,10 +334,17 @@ function AdminUsersInline() {
                     <Button
                       size="sm"
                       variant={u.suspended ? "outline" : "destructive"}
-                      onClick={() => toggleSuspend(u.id, !u.suspended)}
+                      onClick={() => setSuspendTarget({
+                        id: u.id,
+                        name: u.full_name ?? u.email,
+                        suspended: u.suspended,
+                        suspension_type: u.suspension_type,
+                        suspension_reason: u.suspension_reason,
+                        suspended_until: u.suspended_until,
+                      })}
                       className="rounded-none text-[10px] uppercase tracking-widest h-8"
                     >
-                      {u.suspended ? "Unsuspend" : "Suspend"}
+                      {u.suspended ? "Manage" : "Suspend"}
                     </Button>
                   )}
                 </div>
@@ -339,9 +353,18 @@ function AdminUsersInline() {
           })}
         </div>
       )}
+      {suspendTarget && (
+        <SuspensionDialog
+          subject={suspendTarget}
+          open
+          onOpenChange={(v) => { if (!v) setSuspendTarget(null); }}
+          onDone={() => { setSuspendTarget(null); qc.invalidateQueries({ queryKey: ["admin-users-inline"] }); }}
+        />
+      )}
     </div>
   );
 }
+
 
 
 function AdminDonationsInline() {
